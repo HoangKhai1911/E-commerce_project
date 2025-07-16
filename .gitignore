@@ -1,9 +1,34 @@
-node_modules
-build
-.cache
-.tmp
+# Node modules
+node_modules/
+
+# Build outputs
+frontend/.next
+frontend/out
+backend/.strapi
+backend/.cache
+backend/.tmp
+backend/build
+backend/dist
+
+# Environment variables
 .env
 .env.*
-*.sqlite
-*.db
+backend/.env
+backend/.env.*
+frontend/.env
+frontend/.env.*
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# IDE configs
+*.code-workspace
+
+# Others
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
