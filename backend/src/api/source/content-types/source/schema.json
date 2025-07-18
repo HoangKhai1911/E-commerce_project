@@ -1,0 +1,37 @@
+{
+  "kind": "collectionType",
+  "collectionName": "sources",
+  "info": {
+    "singularName": "source",
+    "pluralName": "sources",
+    "displayName": "Source"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "rss_url": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "isActive": {
+      "type": "boolean"
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name"
+    },
+    "posts": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::post.post",
+      "mappedBy": "source"
+    }
+  }
+}

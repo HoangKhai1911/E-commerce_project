@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "user_preferences",
+  "info": {
+    "singularName": "user-preference",
+    "pluralName": "user-preferences",
+    "displayName": "User_Preference"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "user_preference"
+    },
+    "categories": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::category.category",
+      "mappedBy": "user_preference"
+    }
+  }
+}
