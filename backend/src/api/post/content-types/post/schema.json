@@ -9,15 +9,15 @@
   "options": {
     "draftAndPublish": true
   },
-  "pluginOptions": {},
   "attributes": {
-    "tittle": {
-      "type": "string"
+    "title": {
+      "type": "string",
+      "required": true
     },
     "content": {
       "type": "richtext"
     },
-    "link": {
+    "original_url": {
       "type": "string"
     },
     "published": {
@@ -25,23 +25,20 @@
     },
     "slug": {
       "type": "uid",
-      "targetField": "tittle"
+      "targetField": "title",
+      "required": true
     },
     "categories": {
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::category.category",
-      "mappedBy": "posts"
-    },
-    "source": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::source.source",
       "inversedBy": "posts"
     },
-    "clickCount": {
-      "type": "integer",
-      "default": 0
+    "sources": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::source.source",
+      "mappedBy": "post"
     }
   }
 }

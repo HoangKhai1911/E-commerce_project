@@ -4,20 +4,22 @@
   "info": {
     "singularName": "source",
     "pluralName": "sources",
-    "displayName": "Source"
+    "displayName": "Source",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
   },
-  "pluginOptions": {},
   "attributes": {
     "name": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
-    "rss_url": {
-      "type": "string"
+    "URL": {
+      "type": "string",
+      "required": true
     },
-    "website": {
+    "homepage_url": {
       "type": "string"
     },
     "isActive": {
@@ -27,11 +29,17 @@
       "type": "uid",
       "targetField": "name"
     },
-    "posts": {
+    "categories": {
       "type": "relation",
-      "relation": "oneToMany",
+      "relation": "manyToMany",
+      "target": "api::category.category",
+      "mappedBy": "sources"
+    },
+    "post": {
+      "type": "relation",
+      "relation": "manyToOne",
       "target": "api::post.post",
-      "mappedBy": "source"
+      "inversedBy": "sources"
     }
   }
 }
