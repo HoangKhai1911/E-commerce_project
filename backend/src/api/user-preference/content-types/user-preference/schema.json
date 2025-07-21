@@ -4,7 +4,8 @@
   "info": {
     "singularName": "user-preference",
     "pluralName": "user-preferences",
-    "displayName": "User_Preference"
+    "displayName": "User_Preference",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -19,9 +20,9 @@
     },
     "categories": {
       "type": "relation",
-      "relation": "oneToMany",
+      "relation": "manyToMany",
       "target": "api::category.category",
-      "mappedBy": "user_preference"
+      "mappedBy": "user_preferences"
     }
   }
 }
