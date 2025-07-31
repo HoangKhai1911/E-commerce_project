@@ -9,4 +9,13 @@ export default [
   'strapi::session',
   'strapi::favicon',
   'strapi::public',
+   {
+    resolve: './src/middlewares/rate-limit.js',
+    config: {
+      max: 20,
+      duration: 60000,
+      errorMessage: 'Bạn gửi quá nhanh, thử lại sau 1 phút',
+    },
+  },
+
 ];

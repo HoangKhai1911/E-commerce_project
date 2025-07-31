@@ -1,7 +1,16 @@
-/**
- * post router
- */
+// src/api/post/routes/post.ts
 
-import { factories } from '@strapi/strapi';
+const routes = [
+  {
+    method: 'POST',
+    path: '/posts/:id/click',
+    handler: 'post.recordClick',
+    config: {
+      auth: false,
+    },
+  },
+];
 
-export default factories.createCoreRouter('api::post.post');
+export default {
+  routes,
+};

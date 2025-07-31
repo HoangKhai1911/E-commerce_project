@@ -15,6 +15,7 @@
     "outDir": "dist",
     "rootDir": "."
   },
+  "types": ["@strapi/types"],
   "include": [
     // Include root files
     "./",

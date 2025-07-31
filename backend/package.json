@@ -15,7 +15,6 @@
     "upgrade:dry": "npx @strapi/upgrade latest --dry",
     "lint": "eslint . --ext .ts,.tsx",
     "crawl-seed": "ts-node src/scripts/crawlAndSeed.ts"
-
   },
   "dependencies": {
     "@faker-js/faker": "^9.9.0",
@@ -24,6 +23,10 @@
     "@strapi/plugin-users-permissions": "^4.25.22",
     "@strapi/strapi": "^4.25.22",
     "better-sqlite3": "11.3.0",
+    "ioredis": "^5.7.0",
+    "koa-ratelimit": "^6.0.0",
+    "pg": "^8.16.3",
+    "pg-connection-string": "^2.9.1",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^5.3.4",
