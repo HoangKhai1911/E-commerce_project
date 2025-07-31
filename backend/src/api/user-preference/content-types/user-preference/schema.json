@@ -4,25 +4,24 @@
   "info": {
     "singularName": "user-preference",
     "pluralName": "user-preferences",
-    "displayName": "User_Preference",
-    "description": ""
+    "displayName": "User Preference",
+    "description": "Stores a user's chosen interests (3–5 categories)."
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
-  "pluginOptions": {},
   "attributes": {
-    "users_permissions_user": {
+    "user": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "user_preference"
     },
-    "categories": {
+    "interests": {
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::category.category",
-      "mappedBy": "user_preferences"
+      "mappedBy": "usersPreferences"
     }
   }
 }

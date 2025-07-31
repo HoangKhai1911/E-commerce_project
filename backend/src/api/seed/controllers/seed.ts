@@ -1,15 +1,25 @@
+'use strict';
+
 import { Context } from 'koa';
-import runSeed from '../../../../scripts/seed';
 
 export default {
   async seed(ctx: Context) {
     try {
-      await runSeed({ strapi });
-      ctx.body = '✅ Seed completed!';
-    } catch (err) {
-      console.error(err);
-      ctx.status = 500;
-      ctx.body = '❌ Seed failed!';
+      await strapi.db.query('plugin::users-permissions.user').create({
+        data: {
+          username: 'demo_user',
+          email: 'demo@example.com',
+          password: '123456',
+        },
+      });
+
+      ctx.send({ message: '✅ Seed completed!' });
+    } catch (error: unknown) {
+      const err = error as Error;
+      ctx.send({
+        error: '❌ Seed failed!',
+        details: err.message,
+      });
     }
   },
 };

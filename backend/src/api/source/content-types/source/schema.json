@@ -4,8 +4,7 @@
   "info": {
     "singularName": "source",
     "pluralName": "sources",
-    "displayName": "Source",
-    "description": ""
+    "displayName": "Source"
   },
   "options": {
     "draftAndPublish": true
@@ -23,7 +22,8 @@
       "type": "string"
     },
     "isActive": {
-      "type": "boolean"
+      "type": "boolean",
+      "default": true
     },
     "slug": {
       "type": "uid",
@@ -35,11 +35,23 @@
       "target": "api::category.category",
       "mappedBy": "sources"
     },
-    "post": {
+    "posts": {
       "type": "relation",
-      "relation": "manyToOne",
+      "relation": "oneToMany",
       "target": "api::post.post",
-      "inversedBy": "sources"
+      "mappedBy": "source"
+    },
+    "lastCrawledAt": {
+      "type": "datetime",
+      "default": null
+    },
+    "errorCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "lastErrorAt": {
+      "type": "datetime",
+      "default": null
     }
   }
 }

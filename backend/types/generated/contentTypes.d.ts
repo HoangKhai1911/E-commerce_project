@@ -545,6 +545,7 @@ export interface ApiCategoryCategory extends Schema.CollectionType {
 export interface ApiPostPost extends Schema.CollectionType {
   collectionName: 'posts';
   info: {
+    description: '';
     displayName: 'Post';
     pluralName: 'posts';
     singularName: 'post';
@@ -558,17 +559,18 @@ export interface ApiPostPost extends Schema.CollectionType {
       'manyToMany',
       'api::category.category'
     >;
-    content: Attribute.RichText;
+    clickCount: Attribute.Integer & Attribute.DefaultTo<0>;
+    content: Attribute.Text;
     createdAt: Attribute.DateTime;
     createdBy: Attribute.Relation<'api::post.post', 'oneToOne', 'admin::user'> &
       Attribute.Private;
-    original_url: Attribute.String;
+    original_url: Attribute.String & Attribute.Unique;
     published: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
     slug: Attribute.UID<'api::post.post', 'title'> & Attribute.Required;
-    sources: Attribute.Relation<
+    source: Attribute.Relation<
       'api::post.post',
-      'oneToMany',
+      'manyToOne',
       'api::source.source'
     >;
     title: Attribute.String & Attribute.Required;
@@ -581,7 +583,6 @@ export interface ApiPostPost extends Schema.CollectionType {
 export interface ApiSourceSource extends Schema.CollectionType {
   collectionName: 'sources';
   info: {
-    description: '';
     displayName: 'Source';
     pluralName: 'sources';
     singularName: 'source';
@@ -602,12 +603,15 @@ export interface ApiSourceSource extends Schema.CollectionType {
       'admin::user'
     > &
       Attribute.Private;
+    errorCount: Attribute.Integer & Attribute.DefaultTo<0>;
     homepage_url: Attribute.String;
-    isActive: Attribute.Boolean;
+    isActive: Attribute.Boolean & Attribute.DefaultTo<true>;
+    lastCrawledAt: Attribute.DateTime;
+    lastErrorAt: Attribute.DateTime;
     name: Attribute.String & Attribute.Required;
-    post: Attribute.Relation<
+    posts: Attribute.Relation<
       'api::source.source',
-      'manyToOne',
+      'oneToMany',
       'api::post.post'
     >;
     publishedAt: Attribute.DateTime;
@@ -626,20 +630,15 @@ export interface ApiSourceSource extends Schema.CollectionType {
 export interface ApiUserPreferenceUserPreference extends Schema.CollectionType {
   collectionName: 'user_preferences';
   info: {
-    description: '';
-    displayName: 'User_Preference';
+    description: "Stores a user's chosen interests (3\u20135 categories).";
+    displayName: 'User Preference';
     pluralName: 'user-preferences';
     singularName: 'user-preference';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
-    categories: Attribute.Relation<
-      'api::user-preference.user-preference',
-      'manyToMany',
-      'api::category.category'
-    >;
     createdAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::user-preference.user-preference',
@@ -647,7 +646,11 @@ export interface ApiUserPreferenceUserPreference extends Schema.CollectionType {
       'admin::user'
     > &
       Attribute.Private;
-    publishedAt: Attribute.DateTime;
+    interests: Attribute.Relation<
+      'api::user-preference.user-preference',
+      'manyToMany',
+      'api::category.category'
+    >;
     updatedAt: Attribute.DateTime;
     updatedBy: Attribute.Relation<
       'api::user-preference.user-preference',
@@ -655,7 +658,7 @@ export interface ApiUserPreferenceUserPreference extends Schema.CollectionType {
       'admin::user'
     > &
       Attribute.Private;
-    users_permissions_user: Attribute.Relation<
+    user: Attribute.Relation<
       'api::user-preference.user-preference',
       'oneToOne',
       'plugin::users-permissions.user'

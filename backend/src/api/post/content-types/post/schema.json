@@ -4,7 +4,8 @@
   "info": {
     "singularName": "post",
     "pluralName": "posts",
-    "displayName": "Post"
+    "displayName": "Post",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -14,31 +15,36 @@
       "type": "string",
       "required": true
     },
-    "content": {
-      "type": "richtext"
-    },
-    "original_url": {
-      "type": "string"
-    },
-    "published": {
-      "type": "datetime"
-    },
     "slug": {
       "type": "uid",
       "targetField": "title",
       "required": true
     },
+    "content": {
+      "type": "text"
+    },
+    "original_url": {
+      "type": "string",
+      "unique": true
+    },
+    "published": {
+      "type": "datetime"
+    },
+    "clickCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "source": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::source.source",
+      "inversedBy": "posts"
+    },
     "categories": {
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::category.category",
-      "inversedBy": "posts"
-    },
-    "sources": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::source.source",
-      "mappedBy": "post"
+      "mappedBy": "posts"
     }
   }
 }

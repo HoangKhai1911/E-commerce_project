@@ -30,13 +30,13 @@
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::post.post",
-      "mappedBy": "categories"
+      "inversedBy": "categories"
     },
     "user_preferences": {
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::user-preference.user-preference",
-      "inversedBy": "categories"
+      "inversedBy": "interests"
     }
   }
 }

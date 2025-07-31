@@ -1,20 +1,20 @@
-// import type { Core } from '@strapi/strapi';
+// src/index.ts hoặc src/bootstrap.ts (tùy cấu trúc dự án)
+import { Strapi } from '@strapi/strapi';
+import { seedData } from '../scripts/seed';
+import { crawlAndSeed } from '../scripts/crawlAndSeed';
 
 export default {
-  /**
-   * An asynchronous register function that runs before
-   * your application is initialized.
-   *
-   * This gives you an opportunity to extend code.
-   */
-  register(/* { strapi }: { strapi: Core.Strapi } */) {},
+  async bootstrap({ strapi }: { strapi: Strapi }) {
+    const env = strapi.config.environment;
 
-  /**
-   * An asynchronous bootstrap function that runs before
-   * your application gets started.
-   *
-   * This gives you an opportunity to set up your data model,
-   * run jobs, or perform some special logic.
-   */
-  bootstrap(/* { strapi }: { strapi: Core.Strapi } */) {},
+    if (env === 'development') {
+      console.log('🌱 1. Seeding Categories & Sources...');
+      await seedData(strapi);
+
+      console.log('🌐 2. Crawling RSS & Seeding Posts...');
+      await crawlAndSeed(strapi);
+
+      console.log('🎉 Bootstrap seeding & crawling completed!');
+    }
+  },
 };
