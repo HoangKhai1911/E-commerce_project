@@ -69,11 +69,9 @@
     "avatar": {
       "type": "media",
       "multiple": false,
+      "required": false,
       "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
+        "images"
       ]
     },
     "user_preference": {

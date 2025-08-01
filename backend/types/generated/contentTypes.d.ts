@@ -495,6 +495,40 @@ export interface AdminWorkflowStage extends Schema.CollectionType {
   };
 }
 
+export interface ApiCategoryStatCategoryStat extends Schema.CollectionType {
+  collectionName: 'category_stats';
+  info: {
+    description: 'Th\u1ED1ng k\u00EA \u0111i\u1EC3m v\u00E0 l\u01B0\u1EE3t click theo ng\u00E0y cho t\u1EEBng chuy\u00EAn m\u1EE5c';
+    displayName: 'Category Stat';
+    pluralName: 'category-stats';
+    singularName: 'category-stat';
+  };
+  attributes: {
+    category: Attribute.Relation<
+      'api::category-stat.category-stat',
+      'manyToOne',
+      'api::category.category'
+    >;
+    clickCount: Attribute.Integer & Attribute.Required;
+    createdAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::category-stat.category-stat',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    date: Attribute.Date & Attribute.Required;
+    point: Attribute.Integer & Attribute.Required;
+    updatedAt: Attribute.DateTime;
+    updatedBy: Attribute.Relation<
+      'api::category-stat.category-stat',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiCategoryCategory extends Schema.CollectionType {
   collectionName: 'categories';
   info: {
@@ -526,6 +560,11 @@ export interface ApiCategoryCategory extends Schema.CollectionType {
       'api::category.category',
       'manyToMany',
       'api::source.source'
+    >;
+    stats: Attribute.Relation<
+      'api::category.category',
+      'oneToMany',
+      'api::category-stat.category-stat'
     >;
     updatedAt: Attribute.DateTime;
     updatedBy: Attribute.Relation<
@@ -1001,7 +1040,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     draftAndPublish: false;
   };
   attributes: {
-    avatar: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    avatar: Attribute.Media<'images'>;
     blocked: Attribute.Boolean & Attribute.DefaultTo<false>;
     confirmationToken: Attribute.String & Attribute.Private;
     confirmed: Attribute.Boolean & Attribute.DefaultTo<false>;
@@ -1063,6 +1102,7 @@ declare module '@strapi/types' {
       'admin::user': AdminUser;
       'admin::workflow': AdminWorkflow;
       'admin::workflow-stage': AdminWorkflowStage;
+      'api::category-stat.category-stat': ApiCategoryStatCategoryStat;
       'api::category.category': ApiCategoryCategory;
       'api::post.post': ApiPostPost;
       'api::source.source': ApiSourceSource;

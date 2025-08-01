@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "category_stats",
+  "info": {
+    "singularName": "category-stat",
+    "pluralName": "category-stats",
+    "displayName": "Category Stat",
+    "description": "Thống kê điểm và lượt click theo ngày cho từng chuyên mục"
+  },
+  "attributes": {
+    "date": {
+      "type": "date",
+      "required": true
+    },
+    "point": {
+      "type": "integer",
+      "required": true
+    },
+    "clickCount": {
+      "type": "integer",
+      "required": true
+    },
+    "category": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::category.category",
+      "inversedBy": "stats"
+    }
+  }
+}

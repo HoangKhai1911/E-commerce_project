@@ -37,6 +37,12 @@
       "relation": "manyToMany",
       "target": "api::user-preference.user-preference",
       "inversedBy": "interests"
+    },
+    "stats": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::category-stat.category-stat",
+      "mappedBy": "category"
     }
   }
 }
