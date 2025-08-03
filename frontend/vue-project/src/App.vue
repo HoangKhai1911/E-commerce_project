@@ -1,47 +1,33 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+<script setup lang="ts">
+import { useAuthStore } from '@/store/auth';
+import { onMounted } from 'vue';
+import TheNotification from '@/components/ui/TheNotification.vue';
+
+const authStore = useAuthStore();
+
+// Khởi tạo trạng thái xác thực khi ứng dụng được mount
+// Điều này giúp tải lại thông tin user nếu đã có token trong localStorage
+onMounted(async () => {
+  // Kiểm tra nếu có token nhưng chưa có thông tin user (ví dụ khi tải lại trang),
+  // bạn có thể gọi một action để lấy lại thông tin.
+  if (authStore.accessToken && !authStore.user) {
+    // await authStore.fetchUser(); // Bạn có thể tạo action này trong authStore
+  }
+});
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
+  <!-- RouterView sẽ render layout phù hợp (Default, Auth, Admin) -->
+  <RouterView />
+  <!-- TheNotification được đặt ở đây để hiển thị trên tất cả các trang -->
+  <TheNotification />
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-}
+<style lang="scss">
+// Import global styles
+@import '@/assets/css/main.scss';
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+#app {
+  // Có thể thêm các style tổng thể cho app container ở đây
 }
 </style>

@@ -1,0 +1,27 @@
+// src/assets/css/_bootstrap-overrides.scss
+// File này chứa tất cả các biến để ghi đè lên giá trị mặc định của Bootstrap.
+
+// Ví dụ: Đổi màu chủ đạo, font chữ, border-radius
+$primary: #007bff;
+$secondary: #6c757d;
+$success: #28a745;
+$info: #17a2b8;
+$warning: #ffc107;
+$danger: #dc3545;
+$light: #f8f9fa;
+$dark: #343a40;
+
+$body-bg: #f8f9fa;
+$body-color: #212529;
+
+$font-family-sans-serif: 'Be Vietnam Pro', sans-serif;
+$headings-font-family: 'Be Vietnam Pro', sans-serif;
+
+$border-radius: 0.5rem;
+$border-radius-sm: 0.25rem;
+$border-radius-lg: 1rem;
+
+// Ghi đè Z-index layers (chuyển từ _variables.scss sang đây)
+$zindex-modal: 1055; // Tăng z-index của modal nếu cần
+$zindex-popover: 1070;
+$zindex-tooltip: 1080;

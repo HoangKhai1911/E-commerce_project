@@ -1,0 +1,100 @@
+// src/assets/css/main.scss
+
+// 1. Import các biến tùy chỉnh
+// Luôn import các biến của bạn trước khi import Bootstrap.
+@import 'variables'; // Biến của riêng ứng dụng
+@import 'bootstrap-overrides'; // Biến ghi đè Bootstrap
+
+
+// 2. Import Bootstrap (sau khi đã định nghĩa lại các biến)
+// Nhập tất cả các phần của Bootstrap, hoặc chỉ những phần bạn cần để tối ưu kích thước bundle.
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+// Import các phần lõi của Bootstrap
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/root";
+
+// Import các phần của Bootstrap Components bạn sẽ sử dụng
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/images";
+@import "bootstrap/scss/containers";
+@import "bootstrap/scss/grid";
+@import "bootstrap/scss/tables";
+@import "bootstrap/scss/forms";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/transitions";
+@import "bootstrap/scss/dropdown";
+@import "bootstrap/scss/nav";
+@import "bootstrap/scss/navbar";
+@import "bootstrap/scss/card";
+@import "bootstrap/scss/breadcrumb";
+@import "bootstrap/scss/pagination";
+@import "bootstrap/scss/badge";
+@import "bootstrap/scss/alert";
+@import "bootstrap/scss/progress";
+@import "bootstrap/scss/list-group";
+@import "bootstrap/scss/close";
+@import "bootstrap/scss/modal";
+@import "bootstrap/scss/tooltip";
+@import "bootstrap/scss/popover";
+@import "bootstrap/scss/carousel";
+@import "bootstrap/scss/spinners";
+@import "bootstrap/scss/offcanvas";
+@import "bootstrap/scss/placeholders";
+
+// Helpers and Utilities (luôn nên import)
+@import "bootstrap/scss/helpers";
+@import "bootstrap/scss/utilities";
+
+// (Tùy chọn) Import API của utilities để tạo các lớp tiện ích mới
+@import "bootstrap/scss/utilities/api";
+
+
+// 3. CSS Tùy chỉnh chuyên nghiệp (Custom Global Styles)
+
+body {
+    font-family: $font-family-sans-serif;
+    background-color: $body-bg;
+    color: $body-color;
+    line-height: 1.6;
+}
+
+a {
+    color: $primary;
+    text-decoration: none;
+
+    &:hover {
+        color: darken($primary, 10%);
+        text-decoration: underline;
+    }
+}
+
+// Các lớp tiện ích tùy chỉnh
+.text-gradient {
+    background: linear-gradient(to right, $primary, $info);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.shadow-custom {
+    box-shadow: 0 0.5rem 1rem rgba($dark, 0.15);
+}
+
+// Global transitions
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+// 4. (Tùy chọn) Import các file SCSS tùy chỉnh khác
+// @import 'mixins';
+// @import 'typography';
