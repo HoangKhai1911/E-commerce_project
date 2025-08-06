@@ -603,6 +603,7 @@ export interface ApiPostPost extends Schema.CollectionType {
     createdAt: Attribute.DateTime;
     createdBy: Attribute.Relation<'api::post.post', 'oneToOne', 'admin::user'> &
       Attribute.Private;
+    image: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
     original_url: Attribute.String & Attribute.Unique;
     published: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -698,6 +699,11 @@ export interface ApiUserPreferenceUserPreference extends Schema.CollectionType {
     > &
       Attribute.Private;
     user: Attribute.Relation<
+      'api::user-preference.user-preference',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    users_permissions_user: Attribute.Relation<
       'api::user-preference.user-preference',
       'oneToOne',
       'plugin::users-permissions.user'
@@ -1056,6 +1062,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       Attribute.SetMinMaxLength<{
         minLength: 6;
       }>;
+    isAdmin: Attribute.Boolean & Attribute.DefaultTo<false>;
     password: Attribute.Password &
       Attribute.Private &
       Attribute.SetMinMaxLength<{

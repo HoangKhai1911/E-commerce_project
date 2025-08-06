@@ -1,6 +1,6 @@
-const jwt = require('jsonwebtoken');
+import * as jwt from 'jsonwebtoken';
 
-module.exports = {
+export default {
   /**
    * GET /api/auth/verify-email?token=<token>
    * Xác thực email của người dùng bằng JWT token.
@@ -15,9 +15,14 @@ module.exports = {
       
       const decoded = jwt.verify(token, process.env.EMAIL_VERIFICATION_SECRET);
 
+      // Type guard to ensure decoded is an object with an id property
+      if (typeof decoded === 'string' || !decoded.id) {
+        return ctx.badRequest('Invalid token payload.');
+      }
+
       // Cập nhật trường 'confirmed' của người dùng thành true
       const updatedUser = await strapi.entityService.update('plugin::users-permissions.user', decoded.id, {
-        data: { confirmed: true }
+        data: { confirmed: true } as any
       });
       
       if (!updatedUser) {

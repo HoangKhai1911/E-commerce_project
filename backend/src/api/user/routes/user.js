@@ -3,7 +3,7 @@ module.exports = {
     {
       method: 'PUT',
       path: '/user/me',
-      handler: 'user-controller.updateMe',
+      handler: 'userController.updateMe',
       config: {
         policies: ['plugin::users-permissions.isAuthenticated'],
       }
@@ -11,7 +11,7 @@ module.exports = {
     {
       method: 'DELETE',
       path: '/user/me',
-      handler: 'user-controller.deleteMe',
+      handler: 'userController.deleteMe',
       config: {
         policies: ['plugin::users-permissions.isAuthenticated'],
       }

@@ -79,6 +79,10 @@
       "relation": "oneToOne",
       "target": "api::user-preference.user-preference",
       "mappedBy": "users_permissions_user"
+    },
+    "isAdmin": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

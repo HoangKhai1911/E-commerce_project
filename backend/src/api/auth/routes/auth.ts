@@ -3,7 +3,7 @@
 /**
  * auth router
  */
-module.exports = {
+export default {
   routes: [
     {
       method: 'POST',
@@ -11,7 +11,7 @@ module.exports = {
       handler: 'auth-controller.register',
       config: {
         auth: false,
-      }
+      },
     },
     {
       method: 'POST',
@@ -19,23 +19,25 @@ module.exports = {
       handler: 'auth-controller.login',
       config: {
         auth: false,
-      }
+      },
     },
     {
       method: 'GET',
       path: '/auth/me',
       handler: 'auth-controller.me',
       config: {
-        policies: ['global::is-authenticated'], // Yêu cầu người dùng đã đăng nhập
-      }
+        auth: {
+            strategy: 'jwt'
+        }
+      },
     },
     {
       method: 'GET',
       path: '/auth/verify-email',
-      handler: 'verify.verifyEmail',
+      handler: 'auth-controller.verifyEmail',
       config: {
         auth: false,
-      }
-    }
+      },
+    },
   ],
 };

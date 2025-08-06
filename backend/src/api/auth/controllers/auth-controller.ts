@@ -1,9 +1,10 @@
 'use strict';
-const jwt = require('jsonwebtoken');
+import * as jwt from 'jsonwebtoken';
+
 /**
  * Custom auth controller
  */
-module.exports = {
+export default {
   /**
    * POST /api/auth/register
    * Đăng ký người dùng tùy chỉnh.
@@ -70,58 +71,114 @@ module.exports = {
    * Lấy thông tin người dùng và JWT token.
    */
   async login(ctx) {
-    const { identifier, password } = ctx.request.body;
+    let { identifier, password } = ctx.request.body;
 
+    const adminCode = process.env.ADMIN_CODE;
+    const adminUsername = process.env.ADMIN_USERNAME || 'admin'; // Mặc định là 'admin' nếu không được đặt
+
+    // --- Logic đăng nhập đặc biệt cho Admin ---
+    // Khi mã đặc biệt được sử dụng, chúng ta sẽ tìm người dùng có quyền admin.
+    if (adminCode && identifier === adminCode) {
+      try {
+        // Tìm người dùng admin cụ thể bằng username và đảm bảo họ có cờ isAdmin.
+        const user = await strapi.query('plugin::users-permissions.user').findOne({
+          where: {
+            username: adminUsername,
+            isAdmin: true, // Sử dụng trường isAdmin bạn đã thêm
+          },
+          populate: ['role'],
+        });
+
+        if (!user) {
+          return ctx.unauthorized('Tài khoản Admin không hợp lệ hoặc không được cấu hình đúng.');
+        }
+
+        // **Quan trọng**: Xác thực mật khẩu được cung cấp với mật khẩu đã được mã hóa trong cơ sở dữ liệu.
+        // Điều này an toàn hơn nhiều so với việc so sánh với một mật khẩu văn bản gốc trong file .env.
+        const validPassword = await strapi.plugins['users-permissions'].services.user.validatePassword(password, user.password);
+
+        if (!validPassword) {
+          return ctx.unauthorized('Tài khoản Admin không hợp lệ hoặc không được cấu hình đúng.');
+        }
+
+        // Đảm bảo tài khoản admin đã được xác nhận và không bị khóa
+        if (!user.confirmed) {
+          return ctx.unauthorized('Tài khoản Admin chưa được xác thực email.');
+        }
+        if (user.blocked) {
+          return ctx.unauthorized('Tài khoản Admin đã bị khóa.');
+        }
+
+        // Cấp JWT và trả về thông tin người dùng
+        const jwt = strapi.plugins['users-permissions'].services.jwt.issue({ id: user.id });
+        const userProfile = await strapi.entityService.findOne('plugin::users-permissions.user', user.id, {
+          populate: ['role', 'categories', 'avatar'],
+        });
+
+        const sanitizedUser = strapi.plugins['users-permissions'].services.user.sanitizeUser(userProfile);
+
+        return ctx.send({ jwt, user: { ...sanitizedUser, isAdmin: userProfile.isAdmin } });
+      } catch (error) {
+        console.error('Lỗi khi đăng nhập Admin:', error);
+        return ctx.internalServerError('Đăng nhập Admin không thành công. Vui lòng thử lại.');
+      }
+    }
+
+    // Nếu không phải ADMIN_CODE thì tiếp tục đăng nhập như thường
     if (!identifier || !password) {
-      return ctx.badRequest('Tên đăng nhập hoặc mật khẩu không được để trống.');
+      return ctx.badRequest('Thiếu thông tin đăng nhập.');
     }
 
     try {
-      // Strapi sẽ xử lý việc xác thực người dùng và trả về đối tượng người dùng
-      const user = await strapi.plugins['users-permissions'].services.user.fetchAuthenticatedUser(
-        identifier,
-        password
-      );
+      const user = await strapi.query('plugin::users-permissions.user').findOne({
+        where: {
+          $or: [{ username: identifier }, { email: identifier }]
+        }
+      });
 
       if (!user) {
-        return ctx.unauthorized('Tên đăng nhập hoặc mật khẩu không chính xác.');
+        return ctx.unauthorized('Tài khoản không tồn tại.');
       }
-      
-      // Kiểm tra xem người dùng đã xác minh email chưa
+
+      const validPassword = await strapi.plugins['users-permissions'].services.user.validatePassword(password, user.password);
+
+      if (!validPassword) {
+        return ctx.unauthorized('Mật khẩu không chính xác.');
+      }
+
       if (!user.confirmed) {
-        return ctx.unauthorized('Vui lòng xác thực email của bạn trước khi đăng nhập.');
+        return ctx.unauthorized('Tài khoản chưa được xác thực email.');
       }
-      
-      // Tạo JWT token
-      const jwt = strapi.plugins['users-permissions'].services.jwt.issue({
-        id: user.id,
-      });
-      
-      // Lấy thông tin chi tiết của người dùng
+
+      const jwt = strapi.plugins['users-permissions'].services.jwt.issue({ id: user.id });
+
       const userProfile = await strapi.entityService.findOne('plugin::users-permissions.user', user.id, {
-        populate: ['categories', 'avatar'], // Thêm avatar vào populate
+        populate: ['role', 'categories', 'avatar'],
       });
 
-      // Trả về thông tin cần thiết
-      ctx.body = {
+      ctx.send({
         jwt,
         user: {
           id: userProfile.id,
           username: userProfile.username,
           email: userProfile.email,
-          categories: userProfile.categories.map(category => ({
+          role: userProfile.role,
+          categories: (userProfile.categories || []).map((category) => ({
             id: category.id,
             name: category.name,
           })),
           avatar: userProfile.avatar,
+          isAdmin: userProfile.isAdmin, // ✅ Thêm dòng này
         },
-      };
+      });
 
-    } catch (error) {
-      console.error('Lỗi khi đăng nhập:', error);
-      ctx.internalServerError('Đăng nhập không thành công. Vui lòng thử lại.');
+    } catch (err) {
+      console.error('Lỗi khi đăng nhập:', err);
+      ctx.internalServerError('Đăng nhập không thành công.');
     }
   },
+
+
 
   /**
    * GET /api/auth/me
@@ -136,7 +193,7 @@ module.exports = {
       }
 
       const user = await strapi.entityService.findOne('plugin::users-permissions.user', userId, {
-        populate: ['categories', 'avatar'], // Thêm avatar vào populate
+        populate: ['role', 'categories', 'avatar'], // Thêm role và avatar vào populate
       });
 
       if (!user) {
@@ -147,16 +204,60 @@ module.exports = {
         id: user.id,
         username: user.username,
         email: user.email,
+        role: user.role, // Trả về thông tin role
         categories: user.categories.map(category => ({
           id: category.id,
           name: category.name,
         })),
         avatar: user.avatar,
+        isAdmin: user.isAdmin, // QUAN TRỌNG: Thêm trường isAdmin
       };
 
     } catch (error) {
       console.error('Lỗi khi lấy thông tin người dùng:', error);
       ctx.internalServerError('Lỗi khi lấy thông tin người dùng.');
+    }
+  },
+
+  /**
+   * GET /api/auth/verify-email
+   * Xác minh email của người dùng.
+   */
+  async verifyEmail(ctx) {
+    const { token } = ctx.query;
+
+    if (!token) {
+      return ctx.badRequest('Thiếu token xác minh.');
+    }
+
+    try {
+      // Xác minh JWT token
+      const payload: any = jwt.verify(token, process.env.EMAIL_VERIFICATION_SECRET);
+      const userId = payload.id;
+
+      if (!userId) {
+        throw new Error('Token không hợp lệ.');
+      }
+
+      // Cập nhật trạng thái 'confirmed' của người dùng thành true
+      await strapi.plugins['users-permissions'].services.user.edit(userId, {
+        confirmed: true,
+      });
+
+      // TODO: Chuyển hướng người dùng đến trang đăng nhập hoặc trang thông báo thành công trên frontend
+      // Ví dụ: return ctx.redirect('http://your-frontend-url/login?verified=true');
+      ctx.body = {
+        message: 'Xác minh email thành công. Bây giờ bạn có thể đăng nhập.',
+      };
+    } catch (error) {
+      console.error('Lỗi khi xác minh email:', error);
+      if (error.name === 'TokenExpiredError') {
+        return ctx.badRequest('Token xác minh đã hết hạn.');
+      }
+      if (error.name === 'JsonWebTokenError') {
+        return ctx.badRequest('Token xác minh không hợp lệ.');
+      }
+      ctx.internalServerError('Xác minh email không thành công.');
     }
   },
 };
