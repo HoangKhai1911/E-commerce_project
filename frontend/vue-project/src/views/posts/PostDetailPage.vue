@@ -1,134 +1,122 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, defineAsyncComponent } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { usePosts } from '@/composables/usePosts';
-import PostDetailSkeleton from '@/components/posts/PostDetailSkeleton.vue';
-import BaseAlert from '@/components/ui/BaseAlert.vue';
+import PostCard from '@/components/posts/PostCard.vue';
+// import MarkdownIt from 'markdown-it'; // <-- BỎ DÒNG NÀY (nếu content là HTML)
+import DOMPurify from 'dompurify';
+import { useSeoMeta } from '@vueuse/head';
 
-// Tải component RelatedPosts một cách bất đồng bộ
-const RelatedPosts = defineAsyncComponent(() => 
-  import('@/components/posts/RelatedPosts.vue')
-);
-
-// Define local types that match the data shape returned by the usePosts composable.
-// This is a workaround for the type mismatch where the composable does not provide
-// the full 'Source' object (missing 'url').
-interface Category {
-  id: number;
-  name: string;
-  slug: string;
-}
-
-interface Post {
-  id: number;
-  title: string;
-  slug: string;
-  content?: string;
-  publishedAt: string;
-  clickCount?: number;
-  categories?: Category[];
-  source?: { id: number; name: string; }; // Source is missing 'url'
-  thumbnail?: { url: string }; // Đảm bảo kiểu dữ liệu đúng
-}
+// const md = new MarkdownIt(); // <-- BỎ DÒNG NÀY
 
 const route = useRoute();
 const { getPostBySlug, getRelatedPosts } = usePosts();
 
-const post = ref<Post | null>(null);
-const relatedPosts = ref<Post[]>([]);
+const post = ref<any>(null);
+const relatedPosts = ref<any[]>([]);
 const isLoading = ref(true);
-const error = ref<string | null>(null);
+const isPostFound = ref(true);
 
-const fetchPostAndRelated = async () => {
+const fetchPostAndRelated = async (slug: string) => {
   isLoading.value = true;
-  post.value = null; // Clear previous post
-  relatedPosts.value = []; // Clear previous related posts
-  error.value = null; // Clear previous errors
-
-  const slug = route.params.slug as string;
+  isPostFound.value = true;
+  post.value = null;
 
   try {
     const fetchedPost = await getPostBySlug(slug);
     post.value = fetchedPost;
 
-    if (fetchedPost && fetchedPost.id) {
-        // Fetch related posts using the fetchedPost.id
-        const fetchedRelatedPosts = await getRelatedPosts(fetchedPost.id);
-        // Filter out the current post from related posts
-        relatedPosts.value = fetchedRelatedPosts.filter(rp => rp.id !== fetchedPost.id);
+    if (!fetchedPost) {
+      isPostFound.value = false;
+      isLoading.value = false;
+      return;
     }
-  } catch (err) {
+
+    // Cập nhật meta SEO sau khi có dữ liệu post
+    useSeoMeta({
+      title: `${post.value.title} - Tên Blog của bạn`,
+      description: post.value.excerpt || post.value.title,
+      // Thêm các thẻ meta khác nếu cần
+    });
+
+    const fetchedRelatedPosts = await getRelatedPosts(fetchedPost.id);
+    relatedPosts.value = fetchedRelatedPosts.filter(p => p.id !== fetchedPost.id);
+  } catch (err: any) {
     console.error('Error fetching post or related posts:', err);
-    error.value = 'Không thể tải bài viết này.';
+    if (err.response && err.response.status === 404) {
+      isPostFound.value = false;
+    }
   } finally {
     isLoading.value = false;
   }
 };
 
-onMounted(fetchPostAndRelated);
-watch(() => route.params.slug, () => {
-  fetchPostAndRelated();
+watch(
+  () => route.params.slug,
+  async (newSlug) => {
+    if (newSlug) {
+      await fetchPostAndRelated(newSlug as string);
+    }
+  },
+  { immediate: true }
+);
+
+onMounted(() => {
+  console.log('--- Post data on component mount ---');
+  console.log('Post object:', post.value);
+  console.log('Content (raw):', post.value?.content);
+  // THAY ĐỔI DÒNG NÀY:
+  // console.log('Content (sanitized & rendered):', DOMPurify.sanitize(md.render(post.value?.content || '')));
+  // BẰNG DÒNG NÀY:
+  console.log('Content (sanitized):', DOMPurify.sanitize(post.value?.content || '')); // Chỉ sanitize HTML
+  console.log('Thumbnail URL:', post.value?.thumbnail?.url);
+  console.log('Source URL:', post.value?.source?.url);
+  console.log('------------------------------------');
 });
-
-const formatDate = (dateString: string) => {
-  if (!dateString) return 'N/A';
-  const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-  return new Date(dateString).toLocaleDateString('vi-VN', options);
-};
-
-// Simple HTML sanitizer - for display only, not security
-const sanitizeHtml = (html: string) => {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  // Remove script tags and potentially harmful attributes
-  Array.from(doc.scripts).forEach(script => script.remove());
-  Array.from(doc.querySelectorAll('[onerror], [onload], [onmouseover]')).forEach(el => {
-    el.removeAttribute('onerror');
-    el.removeAttribute('onload');
-    el.removeAttribute('onmouseover');
-  });
-  return doc.body.innerHTML;
-};
 </script>
 
 <template>
-  <div class="container py-5">
-    <PostDetailSkeleton v-if="isLoading && !post" />
-    <BaseAlert v-if="error" :message="error" type="danger" class="mb-4" />
+  <div class="container mx-auto px-4 py-8">
+    <div v-if="isLoading" class="text-center">Loading...</div>
+    <div v-else-if="!isPostFound" class="text-center text-red-500">Không tìm thấy bài viết.</div>
+    <div v-else-if="post" class="flex flex-col lg:flex-row gap-8">
+      <!-- Main Content -->
+      <main class="w-full lg:w-2/3">
+        <h1 class="text-3xl font-bold mb-4">{{ post.title }}</h1>
+        <div class="text-gray-500 text-sm mb-4">
+          Ngày đăng: {{ new Date(post.publishedAt).toLocaleDateString() }}
+          <span v-if="post.author">bởi {{ post.author.username }}</span>
+        </div>
+        
+        <!-- Hiển thị nội dung bài viết -->
+        <div class="prose max-w-none">
+          <!-- THAY ĐỔI DÒNG NÀY: -->
+          <!-- <div v-html="DOMPurify.sanitize(md.render(post.content || ''))"></div> -->
+          <!-- BẰNG DÒNG NÀY: -->
+          <div v-html="DOMPurify.sanitize(post.content || '')"></div>
+        </div>
+        
+        <!-- Hiển thị Nguồn bài viết -->
+        <div v-if="post.source?.url" class="mt-4 text-sm text-gray-600">
+          Nguồn bài gốc: 
+          <a :href="post.source.url" target="_blank" class="text-blue-500 hover:underline">
+            {{ post.source.name || post.source.url }}
+          </a>
+        </div>
+      </main>
 
-    <div v-if="post && !isLoading" class="row justify-content-center">
-      <div class="col-lg-9">
-        <article class="post-detail-card shadow-sm p-4 p-md-5 bg-white rounded-lg">
-          <h1 class="post-title mb-4 text-center fw-bold">{{ post.title }}</h1>
-
-          <div class="post-meta text-muted text-center mb-4">
-            <span><i class="bi bi-clock me-1"></i> {{ formatDate(post.publishedAt) }}</span>
-            <span v-if="post.source?.name" class="ms-3"><i class="bi bi-person me-1"></i> Nguồn: {{ post.source.name }}</span>
-            <span class="ms-3"><i class="bi bi-eye me-1"></i> {{ post.clickCount || 0 }} lượt xem</span>
-          </div>
-
-          <figure v-if="post.thumbnail?.url" class="post-thumbnail text-center mb-4">
-            <img :src="post.thumbnail.url" :alt="post.title" class="img-fluid rounded shadow-sm">
-          </figure>
-
-          <div class="post-content fs-5" v-html="sanitizeHtml(post.content || '')"></div>
-
-          <div class="post-categories mt-5 pt-4 border-top">
-            <h6 class="fw-bold mb-3">Danh mục:</h6>
-            <RouterLink v-for="category in post.categories" :key="category.slug" :to="`/categories/${category.slug}`" class="badge bg-secondary-subtle text-secondary me-2 mb-2 text-decoration-none">
-              {{ category.name }}
-            </RouterLink>
-          </div>
-        </article>
-      </div>
-    </div>
-
-    <RelatedPosts v-if="relatedPosts.length > 0 && !isLoading" :posts="relatedPosts as any" />
-
-    <div v-if="!post && !isLoading && !error" class="alert alert-warning text-center my-5" role="alert">
-      Không tìm thấy bài viết bạn yêu cầu.
+      <!-- Sidebar for Related Posts -->
+      <aside class="w-full lg:w-1/3">
+        <h2 class="text-xl font-bold mb-4">Bài viết liên quan</h2>
+        <div v-if="relatedPosts.length" class="space-y-4">
+          <PostCard v-for="p in relatedPosts" :key="p.id" :post="p" />
+        </div>
+        <div v-else class="text-gray-500">Không có bài viết liên quan.</div>
+      </aside>
     </div>
   </div>
 </template>
+
 
 <style lang="scss" scoped>
 .post-detail-card {

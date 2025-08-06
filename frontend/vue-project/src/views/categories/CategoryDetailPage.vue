@@ -113,10 +113,12 @@ const showScrollToTopButton = ref(false);
 
 let filterDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-const defaultSortBy = 'publishedAt:desc';
+// 🔴 SỬA LỖI Ở ĐÂY: Thay đổi defaultSortBy từ 'publishedAt:desc' sang 'id:desc'
+const defaultSortBy = 'id:desc'; // An toàn hơn để test
 const sortBy = ref(defaultSortBy);
 const sortOptions = [
-  { value: defaultSortBy, text: 'Mới nhất' },
+  { value: defaultSortBy, text: 'Mới nhất (ID)' }, // Cập nhật text để dễ hiểu
+  { value: 'publishedAt:desc', text: 'Mới nhất (Ngày đăng)' }, // Giữ lại option này
   { value: 'clickCount:desc', text: 'Phổ biến nhất' },
   { value: 'title:asc', text: 'Tên (A-Z)' },
   { value: 'title:desc', text: 'Tên (Z-A)' },
@@ -147,7 +149,7 @@ const fetchCategoryName = async (slug: string) => {
   try {
     const response = await api.get('/categories', { params: { 'filters[slug][$eq]': slug } });
     if (response.data.data && response.data.data.length > 0) {
-      categoryName.value = response.data.data[0].name;
+      categoryName.value = response.data.data[0].attributes.name; // Use .attributes.name
     } else {
       categoryName.value = slug; // Fallback to slug if not found
       error.value = `Không tìm thấy danh mục với slug "${slug}".`;
@@ -163,7 +165,10 @@ const fetchSources = async () => {
   try {
     // Giả sử API trả về nguồn không phân trang hoặc chúng ta chỉ cần trang đầu tiên
     const response = await api.get('/sources', { params: { 'pagination[limit]': -1, 'sort': 'name:asc' } });
-    sourcesList.value = response.data.data;
+    sourcesList.value = response.data.data.map((item: any) => ({
+      id: item.id,
+      name: item.attributes.name, // Ánh xạ đúng thuộc tính
+    }));
   } catch (err) {
     console.error('Error fetching sources:', err);
     // Không hiển thị lỗi cho người dùng vì đây là bộ lọc không quan trọng
@@ -178,7 +183,32 @@ const fetchPosts = async () => {
   try {
     // Khi fetch lại từ đầu (do filter, đổi slug), luôn lấy trang 1
     const response = await getPostsByCategory(categorySlug.value, currentPage.value, pageSize, sortBy.value, selectedSource.value);
-    posts.value = response.data;
+    
+    // Ánh xạ dữ liệu bài viết từ response.data.data
+    posts.value = response.data.map((item: any) => ({
+      id: item.id,
+      title: item.attributes.title,
+      slug: item.attributes.slug,
+      excerpt: item.attributes.excerpt,
+      publishedAt: item.attributes.publishedAt,
+      clickCount: item.attributes.clickCount,
+      thumbnail: item.attributes.thumbnail?.data?.attributes ? { url: item.attributes.thumbnail.data.attributes.url } : undefined,
+      author: item.attributes.author?.data?.attributes ? {
+        username: item.attributes.author.data.attributes.username,
+        avatar: item.attributes.author.data.attributes.avatar?.data?.attributes ? { url: item.attributes.author.data.attributes.avatar.data.attributes.url } : undefined,
+      } : undefined,
+      categories: item.attributes.categories?.data?.map((cat: any) => ({
+        id: cat.id,
+        name: cat.attributes.name,
+        slug: cat.attributes.slug,
+      })) || [],
+      source: item.attributes.source?.data?.attributes ? {
+        id: item.attributes.source.data.id,
+        name: item.attributes.source.data.attributes.name,
+        url: item.attributes.source.data.attributes.url,
+      } : undefined,
+    }));
+
     totalPosts.value = response.meta.pagination.total;
     totalPages.value = response.meta.pagination.pageCount;
   } catch (err) {
@@ -303,7 +333,35 @@ onUnmounted(() => {
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+.pagination {
+  .page-item {
+    .page-link {
+      margin: 0 5px;
+      border: none;
+      background-color: transparent;
+      color: var(--bs-dark);
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: var(--bs-primary-bg-subtle);
+        color: var(--bs-primary);
+      }
+    }
+
+    &.active .page-link {
+      background-color: var(--bs-primary);
+      color: var(--bs-white);
+      box-shadow: 0 0.25rem 0.5rem rgba(var(--bs-primary-rgb), 0.2);
+    }
+
+    &.disabled .page-link {
+      color: var(--bs-gray-500);
+      pointer-events: none;
+    }
+  }
+}
+
 /* Transition for the list of posts */
 .list-move,
 .list-enter-active,
@@ -348,35 +406,5 @@ onUnmounted(() => {
 .fade-fast-enter-from,
 .fade-fast-leave-to {
   opacity: 0;
-}
-</style>
-
-<style lang="scss" scoped>
-.pagination {
-  .page-item {
-    .page-link {
-      margin: 0 5px;
-      border: none;
-      background-color: transparent;
-      color: var(--bs-dark);
-      transition: all 0.2s ease;
-
-      &:hover {
-        background-color: var(--bs-primary-bg-subtle);
-        color: var(--bs-primary);
-      }
-    }
-
-    &.active .page-link {
-      background-color: var(--bs-primary);
-      color: var(--bs-white);
-      box-shadow: 0 0.25rem 0.5rem rgba(var(--bs-primary-rgb), 0.2);
-    }
-
-    &.disabled .page-link {
-      color: var(--bs-gray-500);
-      pointer-events: none;
-    }
-  }
 }
 </style>
