@@ -6,7 +6,7 @@ module.exports = {
       handler: 'admin.createSource',
       config: {
         policies: [],
-      },
+      }
     },
     {
       method: 'PUT',
@@ -14,7 +14,7 @@ module.exports = {
       handler: 'admin.updateSource',
       config: {
         policies: [],
-      },
+      }
     },
     {
       method: 'DELETE',
@@ -22,7 +22,7 @@ module.exports = {
       handler: 'admin.deleteSource',
       config: {
         policies: [],
-      },
+      }
     },
     {
       method: 'POST',
@@ -30,7 +30,7 @@ module.exports = {
       handler: 'admin.createCategory',
       config: {
         policies: [],
-      },
+      }
     },
     {
       method: 'PUT',
@@ -38,7 +38,7 @@ module.exports = {
       handler: 'admin.updateCategory',
       config: {
         policies: [],
-      },
+      }
     },
     {
       method: 'DELETE',
@@ -46,7 +46,7 @@ module.exports = {
       handler: 'admin.deleteCategory',
       config: {
         policies: [],
-      },
+      }
     },
     {
       method: 'DELETE',
@@ -54,7 +54,7 @@ module.exports = {
       handler: 'admin.deletePostByAdmin',
       config: {
         policies: [],
-      },
+      }
     },
     {
       method: 'DELETE',
@@ -62,7 +62,7 @@ module.exports = {
       handler: 'admin.deleteUserByAdmin',
       config: {
         policies: [],
-      },
-    },
+      }
+    }
   ],
 };

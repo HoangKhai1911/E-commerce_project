@@ -9,7 +9,7 @@ export default {
           // Chỉ cho phép role Authenticated
           scope: ['authenticated']
         }
-      },
+      }
     },
     {
       method: 'GET',
@@ -19,7 +19,7 @@ export default {
         auth: {
           scope: ['authenticated']
         }
-      },
-    },
+      }
+    }
   ],
 };

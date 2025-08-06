@@ -6,7 +6,7 @@ module.exports = {
       handler: 'user-controller.updateMe',
       config: {
         policies: ['plugin::users-permissions.isAuthenticated'],
-      },
+      }
     },
     {
       method: 'DELETE',
@@ -14,7 +14,7 @@ module.exports = {
       handler: 'user-controller.deleteMe',
       config: {
         policies: ['plugin::users-permissions.isAuthenticated'],
-      },
-    },
+      }
+    }
   ],
 };

@@ -11,7 +11,7 @@ module.exports = {
       handler: 'auth-controller.register',
       config: {
         auth: false,
-      },
+      }
     },
     {
       method: 'POST',
@@ -19,7 +19,7 @@ module.exports = {
       handler: 'auth-controller.login',
       config: {
         auth: false,
-      },
+      }
     },
     {
       method: 'GET',
@@ -27,7 +27,7 @@ module.exports = {
       handler: 'auth-controller.me',
       config: {
         policies: ['global::is-authenticated'], // Yêu cầu người dùng đã đăng nhập
-      },
+      }
     },
     {
       method: 'GET',
@@ -35,7 +35,7 @@ module.exports = {
       handler: 'verify.verifyEmail',
       config: {
         auth: false,
-      },
-    },
+      }
+    }
   ],
 };
