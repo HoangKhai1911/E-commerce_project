@@ -21,6 +21,7 @@ interface User {
   avatar: Avatar | null;
   role?: Role;
   categories?: Array<{ id: number; name: string }>;
+  isAdmin?: boolean;
 }
 
 type AuthStatus = 'idle' | 'loading' | 'success' | 'error';
@@ -48,7 +49,8 @@ export const useAuthStore = defineStore('auth', {
 
   getters: {
     isAuthenticated: (state) => !!state.accessToken && !!state.user,
-    isAdmin: (state) => state.user?.role?.name === 'Admin' || state.user?.role?.name === 'Super Admin',
+    // Sửa lại để kiểm tra cờ isAdmin thay vì role name
+    isAdmin: (state) => !!state.user?.isAdmin,
   },
 
   actions: {
@@ -56,16 +58,19 @@ export const useAuthStore = defineStore('auth', {
       this.status = 'loading';
       this.error = null;
       try {
-        const response = await apiClient.post<{ accessToken: string; refreshToken: string; user: User }>('/auth/login', credentials);
-        const { accessToken, refreshToken, user } = response.data;
-        this.accessToken = accessToken;
-        this.refreshToken = refreshToken;
+        // Sửa lại kiểu dữ liệu mong đợi để khớp với backend
+        const response = await apiClient.post<{ jwt: string; user: User }>('/auth/login', credentials);
+        const { jwt, user } = response.data;
+
+        // Gán jwt cho accessToken và lưu vào localStorage
+        this.accessToken = jwt;
         this.user = user;
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.setItem('accessToken', jwt);
         localStorage.setItem('user', JSON.stringify(user));
+
         this.status = 'success';
-        await router.push('/');
+        // Xóa dòng này: await router.push('/');
+        // Việc chuyển hướng sẽ được xử lý bởi component gọi action này (LoginPage.vue)
       } catch (err: any) {
         this.status = 'error';
         this.error =
@@ -98,12 +103,13 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('refreshToken');
       this.status = 'idle';
       this.error = null;
-      router.push('/login');
+      router.push({ name: 'Login' });
     },
 
     async fetchUser() {
       if (!this.accessToken) return;
       try {
+        // SỬA LỖI: Gọi đến đúng endpoint '/auth/me' đã được định nghĩa ở backend.
         const response = await apiClient.get('/auth/me');
         this.user = response.data;
         localStorage.setItem('user', JSON.stringify(this.user));

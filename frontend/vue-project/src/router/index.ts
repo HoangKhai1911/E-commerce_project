@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '@/views/HomePage.vue'
+import { useAuthStore } from '@/store/auth' // Import auth store
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -41,6 +42,11 @@ const router = createRouter({
       component: () => import('@/views/auth/RegisterPage.vue')
     },
     {
+      path: '/auth/forgot-password',
+      name: 'ForgotPassword',
+      component: () => import('@/views/auth/ForgotPasswordPage.vue')
+    },
+    {
       path: '/auth/verify-email',
       name: 'VerifyEmail',
       component: () => import('@/views/auth/VerifyEmailPage.vue')
@@ -50,7 +56,6 @@ const router = createRouter({
       name: 'Search',
       component: () => import('@/views/SearchPage.vue') // Bạn cần tạo component này
     },
-    /*
     {
       path: '/profile',
       name: 'Profile',
@@ -61,24 +66,38 @@ const router = createRouter({
       name: 'Preferences',
       component: () => import('@/views/user/PreferencesPage.vue') // Bạn cần tạo component này
     },
-    */
     // Admin Routes
     {
       path: '/admin/posts',
       name: 'PostManagement',
-      component: () => import('@/views/admin/PostManagement.vue')
+      component: () => import('@/views/admin/PostManagement.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true } // Đánh dấu route này cần quyền admin
     },
     {
       path: '/admin/sources',
       name: 'SourceManagement',
-      component: () => import('@/views/admin/SourceManagement.vue')
+      component: () => import('@/views/admin/SourceManagement.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true } // Đánh dấu route này cần quyền admin
     },
     {
       path: '/admin',
       name: 'AdminDashboard',
-      component: () => import('@/views/admin/AdminDashboard.vue') // Bạn cần tạo component này
+      component: () => import('@/views/admin/AdminDashboard.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true } // Đánh dấu route này cần quyền admin
     }
   ]
 })
+
+// Navigation Guard - Bộ bảo vệ định tuyến
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore();
+
+  // Nếu route yêu cầu quyền admin và người dùng không phải admin
+  if (to.meta.requiresAdmin && !authStore.isAdmin) {
+    next({ name: 'Home' }); // Chuyển hướng về trang chủ
+  } else {
+    next(); // Cho phép truy cập
+  }
+});
 
 export default router

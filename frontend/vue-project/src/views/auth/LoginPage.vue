@@ -30,9 +30,13 @@ const handleLogin = async () => {
     // 3. Xử lý chuyển hướng thông minh
     const redirectPath = route.query.redirect as string | undefined;
     if (redirectPath) {
-      router.replace(redirectPath); // Chuyển hướng về trang người dùng muốn
+      router.replace(redirectPath);
+    } else if (authStore.isAdmin) {
+      // Nếu là admin, chuyển hướng đến trang Admin Dashboard
+      router.replace({ name: 'AdminDashboard' });
     } else {
-      router.replace({ name: 'Home' }); // Mặc định về trang chủ
+      // Nếu là người dùng thường, chuyển hướng về trang chủ
+      router.replace({ name: 'Home' });
     }
   } catch (err: any) {
     errorMessage.value = err.response?.data?.error?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';
