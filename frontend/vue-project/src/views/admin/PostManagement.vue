@@ -100,8 +100,9 @@ const fetchPosts = async () => {
     posts.value = response.data;
     meta.value = response.meta.pagination;
   } catch (err) {
-    error.value = 'Không thể tải danh sách bài viết.';
-    console.error(err);
+    const message = err instanceof Error ? err.message : 'Lỗi không xác định';
+    error.value = 'Không thể tải danh sách bài viết: ' + message;
+    console.error('Error fetching posts:', err);
   } finally {
     isLoading.value = false;
   }
@@ -130,8 +131,9 @@ const deletePost = async (postId: number) => {
       // Tải lại danh sách bài viết ở trang hiện tại
       await fetchPosts();
     } catch (err) {
-      uiStore.addAlert('Xóa bài viết thất bại.', 'danger');
-      console.error(err);
+      const message = err instanceof Error ? err.message : 'Lỗi không xác định';
+      uiStore.addAlert('Xóa bài viết thất bại: ' + message, 'danger');
+      console.error('Error deleting post:', err);
     }
   }
 };

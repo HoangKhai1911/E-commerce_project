@@ -15,8 +15,10 @@
     "noEmit": true,
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "types": ["node"] // <-- THÊM DÒNG NÀY: Bao gồm định nghĩa kiểu cho Node.js
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
+  // <-- THÊM "vite.config.ts" VÀO MẢNG INCLUDE
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "vite.config.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

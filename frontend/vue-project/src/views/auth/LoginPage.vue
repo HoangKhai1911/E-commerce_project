@@ -22,7 +22,7 @@ const handleLogin = async () => {
   isLoading.value = true;
   try {
     // 1. Gọi action login từ store
-    await authStore.login(identifier.value, password.value);
+    await authStore.login({ identifier: identifier.value, password: password.value });
 
     // 2. Hiển thị thông báo thành công
     notificationStore.show('Đăng nhập thành công!', 'success');

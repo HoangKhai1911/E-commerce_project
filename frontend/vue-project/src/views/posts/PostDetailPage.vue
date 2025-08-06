@@ -2,7 +2,7 @@
 import { ref, onMounted, watch, defineAsyncComponent } from 'vue';
 import { useRoute } from 'vue-router';
 import { usePosts } from '@/composables/usePosts';
-import LoadingSpinner from '@/components/common/LoadingSpinner.vue';
+import PostDetailSkeleton from '@/components/posts/PostDetailSkeleton.vue';
 import BaseAlert from '@/components/ui/BaseAlert.vue';
 
 // Tải component RelatedPosts một cách bất đồng bộ
@@ -10,25 +10,37 @@ const RelatedPosts = defineAsyncComponent(() =>
   import('@/components/posts/RelatedPosts.vue')
 );
 
+// Define local types that match the data shape returned by the usePosts composable.
+// This is a workaround for the type mismatch where the composable does not provide
+// the full 'Source' object (missing 'url').
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 interface Post {
   id: number;
   title: string;
   slug: string;
-  content: string;
+  content?: string;
   publishedAt: string;
-  clickCount: number;
-  categories?: Array<{ name: string; slug: string }>;
-  source?: { name: string };
-  thumbnail_url?: string;
+  clickCount?: number;
+  categories?: Category[];
+  source?: { id: number; name: string; }; // Source is missing 'url'
+  thumbnail?: { url: string }; // Đảm bảo kiểu dữ liệu đúng
 }
 
 const route = useRoute();
-const { getPostBySlug, getRelatedPosts, isLoading, error } = usePosts();
+const { getPostBySlug, getRelatedPosts } = usePosts();
 
 const post = ref<Post | null>(null);
 const relatedPosts = ref<Post[]>([]);
+const isLoading = ref(true);
+const error = ref<string | null>(null);
 
 const fetchPostAndRelated = async () => {
+  isLoading.value = true;
   post.value = null; // Clear previous post
   relatedPosts.value = []; // Clear previous related posts
   error.value = null; // Clear previous errors
@@ -48,6 +60,8 @@ const fetchPostAndRelated = async () => {
   } catch (err) {
     console.error('Error fetching post or related posts:', err);
     error.value = 'Không thể tải bài viết này.';
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -78,7 +92,7 @@ const sanitizeHtml = (html: string) => {
 
 <template>
   <div class="container py-5">
-    <LoadingSpinner v-if="isLoading && !post" class="my-5" />
+    <PostDetailSkeleton v-if="isLoading && !post" />
     <BaseAlert v-if="error" :message="error" type="danger" class="mb-4" />
 
     <div v-if="post && !isLoading" class="row justify-content-center">
@@ -88,15 +102,15 @@ const sanitizeHtml = (html: string) => {
 
           <div class="post-meta text-muted text-center mb-4">
             <span><i class="bi bi-clock me-1"></i> {{ formatDate(post.publishedAt) }}</span>
-            <span v-if="post.source" class="ms-3"><i class="bi bi-person me-1"></i> Nguồn: <a :href="post.source.name" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-primary">{{ post.source.name }}</a></span>
+            <span v-if="post.source?.name" class="ms-3"><i class="bi bi-person me-1"></i> Nguồn: {{ post.source.name }}</span>
             <span class="ms-3"><i class="bi bi-eye me-1"></i> {{ post.clickCount || 0 }} lượt xem</span>
           </div>
 
-          <figure v-if="post.thumbnail_url" class="post-thumbnail text-center mb-4">
-            <img :src="post.thumbnail_url" :alt="post.title" class="img-fluid rounded shadow-sm">
+          <figure v-if="post.thumbnail?.url" class="post-thumbnail text-center mb-4">
+            <img :src="post.thumbnail.url" :alt="post.title" class="img-fluid rounded shadow-sm">
           </figure>
 
-          <div class="post-content fs-5" v-html="sanitizeHtml(post.content)"></div>
+          <div class="post-content fs-5" v-html="sanitizeHtml(post.content || '')"></div>
 
           <div class="post-categories mt-5 pt-4 border-top">
             <h6 class="fw-bold mb-3">Danh mục:</h6>
@@ -108,7 +122,7 @@ const sanitizeHtml = (html: string) => {
       </div>
     </div>
 
-    <RelatedPosts v-if="relatedPosts.length > 0 && !isLoading" :posts="relatedPosts" />
+    <RelatedPosts v-if="relatedPosts.length > 0 && !isLoading" :posts="relatedPosts as any" />
 
     <div v-if="!post && !isLoading && !error" class="alert alert-warning text-center my-5" role="alert">
       Không tìm thấy bài viết bạn yêu cầu.
@@ -169,7 +183,7 @@ const sanitizeHtml = (html: string) => {
       color: var(--bs-primary);
       text-decoration: underline;
       &:hover {
-        color: darken(var(--bs-primary), 10%);
+        color: rgba(13, 110, 253, 0.8); // hoặc tự chọn màu hover thủ công
       }
     }
     :deep(ul), :deep(ol) {

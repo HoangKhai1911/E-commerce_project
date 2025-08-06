@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { computed } from 'vue';
 import { useApi } from '@/composables/useApi';
 import { RouterLink } from 'vue-router';
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue';
 import BaseAlert from '@/components/ui/BaseAlert.vue';
+import api from '@/lib/api';
 
 interface Category {
   id: number;
@@ -12,23 +13,18 @@ interface Category {
   // stats?: { point: number }[]; // Nếu bạn muốn hiển thị điểm trending
 }
 
-const api = useApi();
-const categories = ref<Category[]>([]);
-const isLoading = ref(true);
-const error = ref<string | null>(null);
+// The API response for a collection has a specific structure
+interface StrapiCategoryResponse {
+  data: Category[];
+  meta: any;
+}
 
-onMounted(async () => {
-  try {
-    const response = await api.get('/categories');
-    // Strapi trả về { data: [...] } cho collection types
-    categories.value = response.data.data;
-  } catch (err: any) {
-    error.value = err.response?.data?.message || 'Không thể tải danh mục.';
-    console.error('Error fetching categories:', err);
-  } finally {
-    isLoading.value = false;
-  }
-});
+// useApi will automatically handle fetching, loading, and error states.
+const { data, isLoading, error } = useApi<StrapiCategoryResponse>(() => api.get('/categories'));
+
+// Use a computed property to safely access the nested category array from the response.
+const categories = computed(() => data.value?.data || []);
+
 </script>
 
 <template>

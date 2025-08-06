@@ -1,24 +1,16 @@
-// src/main.ts
-import { createApp } from 'vue';
-import { createPinia } from 'pinia';
-import App from './App.vue';
-import router from './router';
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 
-// Import CSS toàn cục (bao gồm Bootstrap và tùy chỉnh của bạn)
-import './assets/css/main.scss';
+import App from './App.vue'
+import router from './router'
 
-// Chỉ import các module JS của Bootstrap mà bạn thực sự cần để tối ưu bundle.
-// Ví dụ: Navbar cần Collapse, Dropdown.
-import 'bootstrap/js/dist/collapse';
-import 'bootstrap/js/dist/dropdown';
+// Import Bootstrap and Bootstrap Icons CSS
+import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap-icons/font/bootstrap-icons.css'
 
-// Import Bootstrap Icons CSS (nếu đã cài đặt npm install bootstrap-icons)
-import 'bootstrap-icons/font/bootstrap-icons.css';
+const app = createApp(App)
 
+app.use(createPinia())
+app.use(router)
 
-const app = createApp(App);
-
-app.use(createPinia());
-app.use(router);
-
-app.mount('#app');
+app.mount('#app')

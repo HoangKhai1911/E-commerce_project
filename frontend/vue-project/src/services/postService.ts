@@ -9,13 +9,15 @@ export const postService = {
   },
 
   getPostBySlug: async (slug: string): Promise<Post> => {
+    // Sửa lỗi: Gọi đến endpoint chính xác của API 'post'
     const response = await api.get(`/posts/${slug}`);
     return response.data;
   },
 
   getPostsByCategory: async (slug: string, page = 1, pageSize = 10): Promise<PaginatedResponse<Post>> => {
-    const response = await api.get(`/categories/${slug}/posts`, {
-      params: { page, pageSize },
+    // Align with the centralized recommendation controller for consistency
+    const response = await api.get(`/recommendations/search`, {
+      params: { category: slug, page, pageSize },
     });
     return response.data;
   },

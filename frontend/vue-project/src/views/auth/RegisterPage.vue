@@ -29,14 +29,14 @@ const handleRegister = async () => {
   }
 
   try {
-    await authStore.register(username.value, email.value, password.value);
-    successMessage.value = 'Đăng ký thành công! Vui lòng kiểm tra email của bạn để xác minh tài khoản.';
+    await authStore.register({ username: username.value, email: email.value, password: password.value });
+    successMessage.value = 'Đăng ký thành công! Bạn sẽ được chuyển hướng đến trang đăng nhập sau 3 giây. Vui lòng kiểm tra email để xác minh tài khoản.';
     username.value = '';
     email.value = '';
     password.value = '';
     confirmPassword.value = '';
-    // Optional: delay before redirecting or show success message for a while
-    // setTimeout(() => { router.push({ name: 'Login' }); }, 3000);
+    // Tự động chuyển hướng đến trang đăng nhập sau 3 giây
+    setTimeout(() => router.push({ name: 'Login' }), 3000);
   } catch (err: any) {
     errorMessage.value = err.response?.data?.error?.message || 'Đăng ký thất bại. Vui lòng thử lại.';
     console.error('Register error:', err);

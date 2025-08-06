@@ -11,8 +11,10 @@ interface Post {
   publishedAt: string;
   clickCount?: number;
   categories?: Array<{ id: number; name: string; slug: string }>;
-  source?: { id: number; name: string };
-  thumbnail_url?: string;
+  source?: { id: number; name: string; url?: string }; // Thêm url vào source
+  thumbnail?: { url: string }; // Thay đổi thumbnail_url thành thumbnail và url
+  author?: { username: string; avatar?: { url: string } }; // Thêm author và avatar
+  excerpt?: string; // Thêm excerpt
 }
 
 interface PaginatedResponse<T> {
@@ -62,17 +64,40 @@ export function usePosts() {
     }
   };
 
-  // Các hàm khác bạn đã dùng ở các trang khác, tập trung vào đây
+  /**
+   * Lấy một bài viết bằng slug từ backend.
+   * Sửa URL để khớp với route backend: /api/posts/:slug
+   * Sử dụng `api.get` để tận dụng cấu hình axios.
+   */
   const getPostBySlug = async (slug: string): Promise<Post> => {
-    // Giả sử API trả về cấu trúc { data: Post }
-    const response = await api.get<{ data: Post }>(`/posts/${slug}?populate=*`);
-    return response.data.data;
+    try {
+      // Sửa URL: bỏ tiền tố `/by-slug` để khớp với route backend `/posts/:id` (nơi :id có thể là slug)
+      const response = await api.get<Post>(`/posts/${slug}`, {
+        params: { populate: '*' } // Truyền populate như một query param
+      });
+      return response.data;
+    } catch (err: any) {
+      console.error('Error fetching post by slug:', err);
+      throw err;
+    }
   };
 
+  /**
+   * Lấy các bài viết liên quan dựa trên ID của bài viết hiện tại.
+   * (Giữ nguyên như đã có trong recommendation controller)
+   */
   const getRelatedPosts = async (postId: number): Promise<Post[]> => {
-    const response = await api.get<Post[]>(`/recommendations/related/${postId}`);
-    return response.data;
+    try {
+      const response = await api.get<Post[]>(`/recommendations/related/${postId}`, {
+        params: { populate: '*' } // Đảm bảo populate các trường cần thiết
+      });
+      return response.data;
+    } catch (err: any) {
+      console.error('Error fetching related posts:', err);
+      throw err;
+    }
   };
+
 
   return {
     fetchRecommendedPosts,
