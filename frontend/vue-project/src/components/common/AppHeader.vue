@@ -1,5 +1,5 @@
 <template>
-  <header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top py-3">
+  <header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top py-2">
     <div class="container">
       <router-link :to="{ name: 'Home' }" class="navbar-brand fw-bolder">
         <span class="text-gradient">MyBlog</span>
@@ -196,7 +196,8 @@ header {
   }
 
   .nav-link {
-    font-weight: 500;
+    font-weight: 700;
+    font-size: 18px;
     margin: 0 0.5rem;
     transition: color 0.3s ease, border-bottom 0.3s ease;
     padding-bottom: 0.25rem;
@@ -204,13 +205,13 @@ header {
 
     &:hover {
       color: $primary-color !important;
-      border-bottom: 2px solid $primary-color;
+      border-bottom: 3px solid $primary-color;
     }
 
     &.active {
       font-weight: bold;
       color: $primary-color !important;
-      border-bottom: 2px solid $primary-color;
+      border-bottom: 3px solid $primary-color;
     }
   }
 

@@ -84,6 +84,11 @@ const router = createRouter({
       name: 'AdminDashboard',
       component: () => import('@/views/admin/AdminDashboard.vue'),
       meta: { requiresAuth: true, requiresAdmin: true } // Đánh dấu route này cần quyền admin
+    },
+    {
+      path: '/:catchAll(.*)',
+      name: 'NotFound',
+      component: () => import('@/views/NotFoundPage.vue')
     }
   ]
 })
