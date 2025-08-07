@@ -1,12 +1,20 @@
 <template>
-  <header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top py-3">
-    <div class="container">
-      <router-link :to="{ name: 'Home' }" class="navbar-brand fw-bolder">
-        <span class="text-gradient">MyBlog</span>
-      </router-link>
+  <header v-if="showSearchBar" class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top py-3">
+    <div class="container d-flex justify-content-between align-items-center position-relative">
 
+      <!-- Logo khi ở trang đăng nhập hoặc đăng ký: căn giữa -->
+      <router-link
+      v-if="showSearchBar"
+      :to="{ name: 'Home' }"
+      class="navbar-brand fw-bolder"
+    >
+      <span class="text-gradient">MyBlog</span>
+    </router-link>
+
+
+      <!-- Nút toggle cho mobile -->
       <button
-        class="navbar-toggler"
+        class="navbar-toggler ms-auto"
         type="button"
         data-bs-toggle="collapse"
         data-bs-target="#navbarNav"
@@ -17,93 +25,112 @@
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <!-- Navigation links -->
-        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <router-link :to="{ name: 'Home' }" class="nav-link" active-class="active">
-              Trang chủ
-            </router-link>
-          </li>
-          <li class="nav-item">
-            <router-link :to="{ name: 'CategoriesList' }" class="nav-link" active-class="active">
-              Danh mục
-            </router-link>
-          </li>
-          <li class="nav-item">
-            <router-link :to="{ name: 'PostList' }" class="nav-link" active-class="active">
-              Bài viết
-            </router-link>
-          </li>
-        </ul>
-
-        <!-- Search Form & Suggestions -->
-        <div class="d-flex align-items-center me-3 position-relative">
-          <form class="d-flex" @submit.prevent="handleSearchSubmit">
-            <input
-              class="form-control me-2"
-              type="search"
-              placeholder="Tìm kiếm..."
-              aria-label="Search"
-              v-model="searchQuery"
-              @input="debouncedFetchSuggestions"
-              @blur="hideSuggestions"
-            />
-          </form>
-          <ul v-if="showSuggestions && suggestions.length > 0" class="search-dropdown dropdown-menu show">
-            <li v-for="suggestion in suggestions" :key="suggestion.id">
-              <router-link :to="{ name: 'PostDetail', params: { slug: suggestion.slug } }" class="dropdown-item" @mousedown.prevent="goToSuggestion(suggestion)">
-                {{ suggestion.title }}
-              </router-link>
-            </li>
-          </ul>
-        </div>
-
-        <!-- User/Auth actions -->
-        <ul class="navbar-nav">
-          <li v-if="isAuthenticated" class="nav-item dropdown">
-            <a
-              class="nav-link dropdown-toggle d-flex align-items-center"
-              href="#"
-              id="navbarDropdown"
-              role="button"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav d-flex align-items-center">
+          <!-- Thanh tìm kiếm -->
+          <li v-if="showSearchBar" class="nav-item me-3" style="min-width: 500px;">
+            <!-- Thanh tìm kiếm ở giữa (chỉ khi không phải login/register) -->
+            <div
+              v-if="showSearchBar"
+              class="position-absolute top-50 start-50 translate-middle d-flex align-items-center"
+              style="z-index: 5;"
             >
-              <img :src="authStore.user?.avatar?.url || 'https://placehold.co/40x40/E8E8E8/444444?text=AV'" alt="Avatar" class="user-avatar rounded-circle me-2">
-              <span class="d-none d-lg-block">Chào, {{ authStore.user?.username || 'Bạn' }}</span>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="navbarDropdown">
-              <li>
-                <router-link :to="{ name: 'Profile' }" class="dropdown-item">
-                  <i class="bi bi-person-circle me-2"></i>Hồ sơ của tôi
-                </router-link>
-              </li>
-              <li>
-                <router-link :to="{ name: 'Preferences' }" class="dropdown-item">
-                  <i class="bi bi-gear-wide-connected me-2"></i>Sở thích
-                </router-link>
-              </li>
-              <li v-if="isAdmin">
-                <router-link :to="{ name: 'AdminDashboard' }" class="dropdown-item">
-                  <i class="bi bi-speedometer me-2"></i>Trang Admin
-                </router-link>
-              </li>
-              <li><hr class="dropdown-divider" /></li>
-              <li>
-                <button @click="handleLogout" class="dropdown-item">
-                  <i class="bi bi-box-arrow-right me-2"></i>Đăng xuất
-                </button>
-              </li>
-            </ul>
+              <form class="d-flex position-relative" @submit.prevent="handleSearchSubmit">
+                <input
+                  class="form-control me-2"
+                  type="search"
+                  placeholder="Tìm kiếm..."
+                  aria-label="Search"
+                  v-model="searchQuery"
+                  @input="debouncedFetchSuggestions"
+                  @blur="hideSuggestions"
+                />
+                <!-- Gợi ý -->
+                <ul
+                  v-if="showSuggestions && suggestions.length > 0"
+                  class="search-dropdown dropdown-menu show"
+                >
+                  <li
+                    v-for="suggestion in suggestions"
+                    :key="suggestion.id"
+                  >
+                    <router-link
+                      :to="{ name: 'PostDetail', params: { slug: suggestion.slug } }"
+                      class="dropdown-item"
+                      @mousedown.prevent="goToSuggestion(suggestion)"
+                    >
+                      {{ suggestion.title }}
+                    </router-link>
+                  </li>
+                </ul>
+              </form>
+            </div>
+
           </li>
-          <li v-else class="nav-item d-flex align-items-center">
-            <router-link :to="{ name: 'Login' }" class="btn btn-primary me-2">
-              Đăng nhập
-            </router-link>
-            <router-link :to="{ name: 'Register' }" class="btn btn-outline-primary">
-              Đăng ký
-            </router-link>
+
+          <!-- Tài khoản -->
+          <li v-if="showSearchBar" class="nav-item dropdown">
+            <template v-if="isAuthenticated">
+              <a
+                class="nav-link dropdown-toggle d-flex align-items-center"
+                href="#"
+                id="navbarDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <img :src="authStore.user?.avatar?.url || 'https://placehold.co/40x40/E8E8E8/444444?text=AV'" alt="Avatar" class="user-avatar rounded-circle me-2">
+                <span class="d-none d-lg-block">Chào, {{ authStore.user?.username || 'Bạn' }}</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="navbarDropdown">
+                <li>
+                  <router-link :to="{ name: 'Profile' }" class="dropdown-item">
+                    <i class="bi bi-person-circle me-2"></i>Hồ sơ của tôi
+                  </router-link>
+                </li>
+                <li>
+                  <router-link :to="{ name: 'Preferences' }" class="dropdown-item">
+                    <i class="bi bi-gear-wide-connected me-2"></i>Sở thích
+                  </router-link>
+                </li>
+                <li v-if="isAdmin">
+                  <router-link :to="{ name: 'AdminDashboard' }" class="dropdown-item">
+                    <i class="bi bi-speedometer me-2"></i>Trang Admin
+                  </router-link>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <button @click="handleLogout" class="dropdown-item">
+                    <i class="bi bi-box-arrow-right me-2"></i>Đăng xuất
+                  </button>
+                </li>
+              </ul>
+            </template>
+            <template v-else>
+              <a
+                class="nav-link dropdown-toggle d-flex align-items-center"
+                href="#"
+                id="guestDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <i class="bi bi-person-circle fs-5 me-2"></i>
+                <span>Tài khoản</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="guestDropdown">
+                <li>
+                  <router-link :to="{ name: 'Login' }" class="dropdown-item">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập
+                  </router-link>
+                </li>
+                <li>
+                  <router-link :to="{ name: 'Register' }" class="dropdown-item">
+                    <i class="bi bi-person-plus me-2"></i>Đăng ký
+                  </router-link>
+                </li>
+              </ul>
+            </template>
           </li>
         </ul>
       </div>
@@ -111,25 +138,30 @@
   </header>
 </template>
 
+
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
 import { storeToRefs } from 'pinia';
 import { suggestPosts } from '@/services/searchService';
 import type { PostSuggestion } from '@/services/searchService';
 import { debounce } from 'lodash-es';
 
-// Bổ sung Bootstrap Icons CSS vào file index.html hoặc main.js
-// <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
 const authStore = useAuthStore();
 const router = useRouter();
+const route = useRoute();
 const { isAuthenticated, isAdmin } = storeToRefs(authStore);
 
 const searchQuery = ref('');
 const suggestions = ref<PostSuggestion[]>([]);
 const showSuggestions = ref(false);
+
+// Ẩn thanh tìm kiếm nếu ở Login hoặc Register
+const showSearchBar = computed(() => {
+  const hiddenRoutes = ['Login', 'Register'];
+  return !hiddenRoutes.includes(route.name as string);
+});
 
 const handleLogout = () => {
   authStore.logout();
@@ -166,6 +198,7 @@ const goToSuggestion = (suggestion: PostSuggestion) => {
   showSuggestions.value = false;
 };
 </script>
+
 
 <style lang="scss" scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -211,8 +244,12 @@ header {
       border-bottom: 2px solid $primary-color;
     }
   }
+  .dropdown-menu {
+    min-width: 100px;
+  }
 
   .form-control {
+    width: 500px;
     border-radius: 0.5rem;
     &:focus {
       box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.25);

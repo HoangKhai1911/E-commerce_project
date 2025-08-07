@@ -1,3 +1,68 @@
+<template>
+  <div class="container py-5 d-flex justify-content-center align-items-center min-vh-75">
+    <div class="card shadow-sm p-4 auth-card">
+      <div class="card-body">
+        <h2 class="card-title text-center mb-3 fw-bold">Đăng ký</h2>
+
+        <BaseAlert v-if="errorMessage" :message="errorMessage" type="danger" class="mb-3" />
+        <BaseAlert v-if="successMessage" :message="successMessage" type="success" class="mb-3" />
+
+        <form @submit.prevent="handleRegister">
+          <div class="mb-2">
+            <BaseInput
+              id="reg-username"
+              label="Tên người dùng"
+              type="text"
+              v-model="username"
+              placeholder="Nhập tên người dùng"
+              required
+            />
+          </div>
+          <div class="mb-2">
+            <BaseInput
+              id="reg-email"
+              label="Email"
+              type="email"
+              v-model="email"
+              placeholder="Nhập email"
+              required
+            />
+          </div>
+          <div class="mb-2">
+            <BaseInput
+              id="reg-password"
+              label="Mật khẩu"
+              type="password"
+              v-model="password"
+              placeholder="Nhập mật khẩu"
+              required
+            />
+          </div>
+          <div class="mb-2">
+            <BaseInput
+              id="reg-confirm-password"
+              label="Xác nhận mật khẩu"
+              type="password"
+              v-model="confirmPassword"
+              placeholder="Nhập lại mật khẩu"
+              required
+            />
+          </div>
+
+          <BaseButton type="submit" :loading="isLoading" class="w-100 btn-primary">
+            Đăng ký
+          </BaseButton>
+        </form>
+
+        <p class="text-center text-muted mt-3 small">
+          Đã có tài khoản?
+          <RouterLink to="/auth/login" class="fw-bold text-decoration-none">Đăng nhập</RouterLink>
+        </p>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useAuthStore } from '@/store/auth';
@@ -29,13 +94,17 @@ const handleRegister = async () => {
   }
 
   try {
-    await authStore.register({ username: username.value, email: email.value, password: password.value });
-    successMessage.value = 'Đăng ký thành công! Bạn sẽ được chuyển hướng đến trang đăng nhập sau 3 giây. Vui lòng kiểm tra email để xác minh tài khoản.';
+    await authStore.register({
+      username: username.value,
+      email: email.value,
+      password: password.value
+    });
+
+    successMessage.value = 'Đăng ký thành công! Đang chuyển hướng đến trang đăng nhập...';
     username.value = '';
     email.value = '';
     password.value = '';
     confirmPassword.value = '';
-    // Tự động chuyển hướng đến trang đăng nhập sau 3 giây
     setTimeout(() => router.push({ name: 'Login' }), 3000);
   } catch (err: any) {
     errorMessage.value = err.response?.data?.error?.message || 'Đăng ký thất bại. Vui lòng thử lại.';
@@ -46,74 +115,9 @@ const handleRegister = async () => {
 };
 </script>
 
-<template>
-  <div class="container py-5 d-flex justify-content-center align-items-center min-vh-75">
-    <div class="card shadow-lg p-4 p-md-5 auth-card">
-      <div class="card-body">
-        <h2 class="card-title text-center mb-4 fw-bold">Đăng ký</h2>
-        <p class="text-center text-muted mb-4">Hãy tham gia cùng chúng tôi!</p>
-
-        <BaseAlert v-if="errorMessage" :message="errorMessage" type="danger" class="mb-4" />
-        <BaseAlert v-if="successMessage" :message="successMessage" type="success" class="mb-4" />
-
-        <form @submit.prevent="handleRegister">
-          <div class="mb-3">
-            <BaseInput
-              id="reg-username"
-              label="Tên người dùng"
-              type="text"
-              v-model="username"
-              placeholder="Nhập tên người dùng của bạn"
-              required
-            />
-          </div>
-          <div class="mb-3">
-            <BaseInput
-              id="reg-email"
-              label="Email"
-              type="email"
-              v-model="email"
-              placeholder="Nhập địa chỉ email của bạn"
-              required
-            />
-          </div>
-          <div class="mb-3">
-            <BaseInput
-              id="reg-password"
-              label="Mật khẩu"
-              type="password"
-              v-model="password"
-              placeholder="Tạo mật khẩu mạnh"
-              required
-            />
-          </div>
-          <div class="mb-4">
-            <BaseInput
-              id="reg-confirm-password"
-              label="Xác nhận mật khẩu"
-              type="password"
-              v-model="confirmPassword"
-              placeholder="Nhập lại mật khẩu"
-              required
-            />
-          </div>
-          <BaseButton type="submit" :loading="isLoading" class="w-100 btn-lg btn-primary">
-            Đăng ký
-          </BaseButton>
-        </form>
-
-        <p class="text-center text-muted mt-4">
-          Đã có tài khoản?
-          <RouterLink to="/auth/login" class="text-decoration-none fw-bold">Đăng nhập</RouterLink>
-        </p>
-      </div>
-    </div>
-  </div>
-</template>
-
-<style lang="scss" scoped>
+<style scoped>
 .auth-card {
-  max-width: 450px;
+  max-width: 380px;
   width: 100%;
   border-radius: var(--bs-border-radius-lg);
   background-color: var(--bs-white);
