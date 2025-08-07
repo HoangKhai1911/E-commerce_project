@@ -17,14 +17,14 @@
     <!-- Nội dung chính của trang, sử dụng layout Bootstrap 5 -->
     <main v-else class="container py-5">
       <!-- Khu vực hiển thị các danh mục nổi bật -->
-      <section v-if="trendingCategories.length > 0" class="mb-5">
+      <!-- <section v-if="trendingCategories.length > 0" class="mb-5">
         <h2 class="text-center fw-bold mb-4">Chủ đề nổi bật</h2>
         <div class="row g-3 justify-content-center">
           <div v-for="category in trendingCategories" :key="category.id" class="col-6 col-sm-4 col-md-3 col-lg-2">
             <CategoryCard :category="category" />
           </div>
         </div>
-      </section>
+      </section> -->
 
       <!-- Khu vực hiển thị các bài viết được đề xuất -->
       <section v-if="recommendedPosts.length > 0" class="mb-5">

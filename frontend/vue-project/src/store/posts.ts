@@ -82,12 +82,10 @@ export const usePostsStore = defineStore('posts', {
     async fetchLatestPosts() {
       this.status = 'loading';
       try {
-        // SỬA LỖI: Gọi API search mà không có query để lấy bài viết mới nhất
-        // Backend đã populate sẵn các trường cần thiết
+        // Thêm tham số '?populate=coverImage' vào URL
         const response = await apiClient.get<{ data: Post[] }>('/recommendations/search', {
-          params: { pageSize: 6 }
+          params: { pageSize: 6, populate: 'thumbnail,author,categories' }
         });
-        // API search trả về cấu trúc { data: [...], meta: {...} }
         this.latestPosts = response.data.data;
         this.status = 'success';
       } catch (err) {

@@ -111,19 +111,67 @@ const handleRegister = async () => {
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
+.auth-card-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f0f2f5;
+  padding: 20px;
+}
 .auth-card {
-  max-width: 450px;
+  max-width: 500px;
   width: 100%;
-  border-radius: var(--bs-border-radius-lg);
-  background-color: var(--bs-white);
+  padding: 40px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
-
-.card-title {
-  color: var(--bs-primary);
+.auth-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.5rem; /* Cỡ chữ tiêu đề */
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #212529;
 }
-
-.min-vh-75 {
-  min-height: 75vh;
+.auth-form {
+  font-family: 'Poppins', sans-serif;
+}
+.auth-form :deep(.form-label) {
+  font-weight: 600;
+  color: #495057;
+  font-size: 1.15rem; /* Tăng cỡ chữ của nhãn (label) */
+  margin-bottom: 0.75rem;
+}
+.auth-form :deep(.form-control) {
+  font-size: 1.15rem; /* Tăng cỡ chữ của ô input */
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid #ced4da;
+}
+.auth-form :deep(.form-control):focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+}
+.auth-form :deep(.btn) {
+  font-size: 1.2rem; /* Tăng cỡ chữ của nút bấm */
+  font-weight: 700;
+  padding: 1.1rem;
+  border-radius: 12px;
+  margin-top: 1.5rem;
+}
+p {
+  /* font-family: 'Montserrat', sans-serif; */
+  font-size: 1.2rem; /* Cỡ chữ của đoạn văn */
+  color: #6c757d; /* Màu chữ nhạt hơn */
+  font-weight: 500; /* Độ đậm chữ */
+}
+h2 {
+  /* font-family: 'Montserrat', sans-serif; */
+  font-size: 2.5rem; /* Cỡ chữ tiêu đề */
+  font-weight: 700;
+  color: #007bff; /* Màu chữ tối */
 }
 </style>
