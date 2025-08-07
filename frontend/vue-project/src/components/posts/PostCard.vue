@@ -171,6 +171,7 @@ const formatDate = (dateString: string) => {
 .card {
   border: 1px solid var(--bs-border-color);
   transition: all 0.2s ease-in-out;
+  max-width: 400px;
 }
 
 .card:hover {
