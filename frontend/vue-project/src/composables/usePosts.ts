@@ -30,7 +30,9 @@ interface Post {
   clickCount?: number;
   categories?: Array<{ id: number; name: string; slug: string }>;
   source?: { id: number; name: string; url?: string };
-  thumbnail?: { url: string };
+  image?: {
+    url: string;
+  }[];
   author?: Author;
   excerpt?: string;
 }
@@ -92,7 +94,7 @@ export function usePosts() {
       const response = await api.get(`/posts/${slug}`, {
         params: {
           populate: {
-            thumbnail: { fields: ['url'] },
+            image: { fields: ['url', 'alternativeText'] },
             author: {
               fields: ['username'],
               populate: {
@@ -116,8 +118,8 @@ export function usePosts() {
         excerpt: raw.attributes.excerpt,
         publishedAt: raw.attributes.publishedAt,
         clickCount: raw.attributes.clickCount,
-        // Ánh xạ thumbnail
-        thumbnail: raw.attributes.thumbnail?.data?.attributes ? { url: raw.attributes.thumbnail.data.attributes.url as string } : undefined,
+        // Ánh xạ image
+        image: raw.attributes.image?.data?.map((img: any) => img.attributes) || [],
         // Ánh xạ author
         author: raw.attributes.author?.data?.attributes ? {
           id: raw.attributes.author.data.id as number,
@@ -157,7 +159,7 @@ export function usePosts() {
     sourceId: number | ''
   ): Promise<PaginatedResponse<Post>> => {
     const params: any = {
-      'populate': ['categories', 'source', 'thumbnail', 'author.avatar'], // Populate các quan hệ cần thiết
+      'populate': ['categories', 'source', 'image', 'author.avatar'], // Populate các quan hệ cần thiết
       'filters[categories][slug][$eq]': categorySlug, // Lọc theo slug của danh mục
       'pagination[page]': page,
       'pagination[pageSize]': pageSize,
@@ -180,7 +182,7 @@ export function usePosts() {
         excerpt: item.attributes.excerpt,
         publishedAt: item.attributes.publishedAt,
         clickCount: item.attributes.clickCount,
-        thumbnail: item.attributes.thumbnail?.data?.attributes ? { url: item.attributes.thumbnail.data.attributes.url } : undefined,
+        image: item.attributes.image?.data?.map((img: any) => img.attributes) || [],
         author: item.attributes.author?.data?.attributes ? {
           id: item.attributes.author.data.id,
           username: item.attributes.author.data.attributes.username,
@@ -218,8 +220,8 @@ export function usePosts() {
     try {
       const response = await api.get<Post[]>(`/recommendations/related/${postId}`, {
         params: {
-          populate: { // Truyền đối tượng populate chi tiết cho related posts
-            thumbnail: { fields: ['url'] },
+          populate: {
+            image: { fields: ['url', 'alternativeText'] },
             author: {
               fields: ['username'],
               populate: {

@@ -32,5 +32,15 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'PUT',
+      path: '/posts/:id',
+      handler: 'post.update',
+    },
+    {
+      method: 'DELETE',
+      path: '/posts/:id',
+      handler: 'post.delete', // This route enables the 'delete' permission in the admin panel.
+    },
   ],
 };

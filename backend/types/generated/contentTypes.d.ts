@@ -548,14 +548,14 @@ export interface ApiCategoryCategory extends Schema.CollectionType {
       'admin::user'
     > &
       Attribute.Private;
-    name: Attribute.String & Attribute.Required;
+    name: Attribute.String;
     posts: Attribute.Relation<
       'api::category.category',
       'manyToMany',
       'api::post.post'
     >;
     publishedAt: Attribute.DateTime;
-    slug: Attribute.UID<'api::category.category', 'name'> & Attribute.Required;
+    slug: Attribute.UID<'api::category.category', 'name'>;
     sources: Attribute.Relation<
       'api::category.category',
       'manyToMany',
@@ -598,7 +598,7 @@ export interface ApiPostPost extends Schema.CollectionType {
       'manyToMany',
       'api::category.category'
     >;
-    clickCount: Attribute.Integer & Attribute.DefaultTo<0>;
+    clickCount: Attribute.BigInteger & Attribute.DefaultTo<'0'>;
     content: Attribute.Text;
     createdAt: Attribute.DateTime;
     createdBy: Attribute.Relation<'api::post.post', 'oneToOne', 'admin::user'> &
@@ -617,6 +617,12 @@ export interface ApiPostPost extends Schema.CollectionType {
     updatedAt: Attribute.DateTime;
     updatedBy: Attribute.Relation<'api::post.post', 'oneToOne', 'admin::user'> &
       Attribute.Private;
+    view_log: Attribute.Relation<
+      'api::post.post',
+      'oneToMany',
+      'api::view-log.view-log'
+    >;
+    viewCount: Attribute.BigInteger & Attribute.DefaultTo<'0'>;
   };
 }
 
@@ -708,6 +714,40 @@ export interface ApiUserPreferenceUserPreference extends Schema.CollectionType {
       'oneToOne',
       'plugin::users-permissions.user'
     >;
+  };
+}
+
+export interface ApiViewLogViewLog extends Schema.CollectionType {
+  collectionName: 'view_log';
+  info: {
+    description: 'Ghi l\u1EA1i m\u1ED9t l\u01B0\u1EE3t xem cho m\u1ED9t n\u1ED9i dung, v\u00ED d\u1EE5 nh\u01B0 b\u00E0i vi\u1EBFt.';
+    displayName: 'View Log';
+    pluralName: 'view-logs';
+    singularName: 'view-log';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::view-log.view-log',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    post: Attribute.Relation<
+      'api::view-log.view-log',
+      'manyToOne',
+      'api::post.post'
+    >;
+    updatedAt: Attribute.DateTime;
+    updatedBy: Attribute.Relation<
+      'api::view-log.view-log',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
   };
 }
 
@@ -1114,6 +1154,7 @@ declare module '@strapi/types' {
       'api::post.post': ApiPostPost;
       'api::source.source': ApiSourceSource;
       'api::user-preference.user-preference': ApiUserPreferenceUserPreference;
+      'api::view-log.view-log': ApiViewLogViewLog;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::upload.file': PluginUploadFile;

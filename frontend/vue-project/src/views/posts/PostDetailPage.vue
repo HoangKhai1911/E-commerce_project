@@ -1,19 +1,49 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { usePosts } from '@/composables/usePosts';
 import PostCard from '@/components/posts/PostCard.vue';
-// import MarkdownIt from 'markdown-it'; // <-- BỎ DÒNG NÀY (nếu content là HTML)
+import PostDetailSkeleton from '@/components/posts/PostDetailSkeleton.vue';
 import DOMPurify from 'dompurify';
 import { useSeoMeta } from '@vueuse/head';
 
-// const md = new MarkdownIt(); // <-- BỎ DÒNG NÀY
+// Thêm interface để định nghĩa cấu trúc dữ liệu cho bài viết, giúp code an toàn và dễ bảo trì hơn.
+interface Author {
+  id: number;
+  username: string;
+  avatar?: { url: string };
+}
+
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+interface Post {
+  id: number;
+  slug: string;
+  title: string;
+  content?: string;
+  excerpt?: string;
+  publishedAt: string;
+  image?: {
+    url: string;
+    alternativeText?: string;
+  }[];
+  author?: Author;
+  categories?: Category[];
+  source?: {
+    name?: string;
+    url?: string;
+  };
+}
 
 const route = useRoute();
 const { getPostBySlug, getRelatedPosts } = usePosts();
 
-const post = ref<any>(null);
-const relatedPosts = ref<any[]>([]);
+const post = ref<Post | null>(null);
+const relatedPosts = ref<Post[]>([]);
 const isLoading = ref(true);
 const isPostFound = ref(true);
 
@@ -32,12 +62,13 @@ const fetchPostAndRelated = async (slug: string) => {
       return;
     }
 
-    // Cập nhật meta SEO sau khi có dữ liệu post
-    useSeoMeta({
-      title: `${post.value.title} - Tên Blog của bạn`,
-      description: post.value.excerpt || post.value.title,
-      // Thêm các thẻ meta khác nếu cần
-    });
+    if (post.value) {
+      // Cập nhật meta SEO sau khi có dữ liệu post
+      useSeoMeta({
+        title: `${post.value.title} - MyBlog`,
+        description: post.value.excerpt || post.value.title,
+      });
+    }
 
     const fetchedRelatedPosts = await getRelatedPosts(fetchedPost.id);
     relatedPosts.value = fetchedRelatedPosts.filter(p => p.id !== fetchedPost.id);
@@ -61,58 +92,87 @@ watch(
   { immediate: true }
 );
 
-onMounted(() => {
-  console.log('--- Post data on component mount ---');
-  console.log('Post object:', post.value);
-  console.log('Content (raw):', post.value?.content);
-  // THAY ĐỔI DÒNG NÀY:
-  // console.log('Content (sanitized & rendered):', DOMPurify.sanitize(md.render(post.value?.content || '')));
-  // BẰNG DÒNG NÀY:
-  console.log('Content (sanitized):', DOMPurify.sanitize(post.value?.content || '')); // Chỉ sanitize HTML
-  console.log('Thumbnail URL:', post.value?.thumbnail?.url);
-  console.log('Source URL:', post.value?.source?.url);
-  console.log('------------------------------------');
+const sanitizedContent = computed(() => {
+  if (!post.value || !post.value.content) return '';
+  return DOMPurify.sanitize(post.value.content);
 });
 </script>
 
 <template>
-  <div class="container mx-auto px-4 py-8">
-    <div v-if="isLoading" class="text-center">Loading...</div>
-    <div v-else-if="!isPostFound" class="text-center text-red-500">Không tìm thấy bài viết.</div>
-    <div v-else-if="post" class="flex flex-col lg:flex-row gap-8">
-      <!-- Main Content -->
-      <main class="w-full lg:w-2/3">
-        <h1 class="text-3xl font-bold mb-4">{{ post.title }}</h1>
-        <div class="text-gray-500 text-sm mb-4">
-          Ngày đăng: {{ new Date(post.publishedAt).toLocaleDateString() }}
-          <span v-if="post.author">bởi {{ post.author.username }}</span>
-        </div>
-        
-        <!-- Hiển thị nội dung bài viết -->
-        <div class="prose max-w-none">
-          <!-- THAY ĐỔI DÒNG NÀY: -->
-          <!-- <div v-html="DOMPurify.sanitize(md.render(post.content || ''))"></div> -->
-          <!-- BẰNG DÒNG NÀY: -->
-          <div v-html="DOMPurify.sanitize(post.content || '')"></div>
-        </div>
-        
-        <!-- Hiển thị Nguồn bài viết -->
-        <div v-if="post.source?.url" class="mt-4 text-sm text-gray-600">
-          Nguồn bài gốc: 
-          <a :href="post.source.url" target="_blank" class="text-blue-500 hover:underline">
-            {{ post.source.name || post.source.url }}
-          </a>
-        </div>
-      </main>
+  <div class="bg-light">
+    <div class="container py-5">
+      <!-- Skeleton Loader -->
+      <PostDetailSkeleton v-if="isLoading" />
 
-      <!-- Sidebar for Related Posts -->
-      <aside class="w-full lg:w-1/3">
-        <h2 class="text-xl font-bold mb-4">Bài viết liên quan</h2>
-        <div v-if="relatedPosts.length" class="space-y-4">
-          <PostCard v-for="p in relatedPosts" :key="p.id" :post="p" />
+      <!-- Not Found Message -->
+      <div v-else-if="!isPostFound" class="text-center py-5">
+        <h1 class="display-4">404 - Bài viết không tồn tại</h1>
+        <p class="lead text-muted">Rất tiếc, chúng tôi không thể tìm thấy bài viết bạn yêu cầu.</p>
+        <RouterLink to="/" class="btn btn-primary mt-3">Quay về trang chủ</RouterLink>
+      </div>
+
+      <!-- Post Detail -->
+      <div v-else-if="post" class="row justify-content-center">
+        <div class="col-lg-9">
+          <article class="post-detail-card shadow-sm p-4 p-md-5 bg-white rounded-lg">
+            <h1 class="post-title fw-bolder mb-3 text-center">{{ post.title }}</h1>
+
+            <!-- Post Meta -->
+            <div class="post-meta text-center mb-4 d-flex align-items-center justify-content-center flex-wrap gap-3">
+              <span v-if="post.author" class="author">
+                <i class="bi bi-person-fill me-1"></i>
+                {{ post.author.username }}
+              </span>
+              <span class="published-date">
+                <i class="bi bi-calendar3 me-1"></i>
+                {{ new Date(post.publishedAt).toLocaleDateString('vi-VN') }}
+              </span>
+              <span v-if="post.categories && post.categories.length" class="categories">
+                <i class="bi bi-tag-fill me-1"></i>
+                <template v-for="(category, index) in post.categories" :key="category.id">
+                  <RouterLink :to="{ name: 'CategoryDetail', params: { slug: category.slug } }" class="text-decoration-none text-primary">
+                    {{ category.name }}
+                  </RouterLink>
+                  <span v-if="index < post.categories.length - 1">, </span>
+                </template>
+              </span>
+            </div>
+
+            <!-- Post Thumbnail -->
+            <div v-if="post.image && post.image.length > 0 && post.image[0].url" class="post-thumbnail my-4 text-center">
+              <img 
+                :src="post.image[0].url" 
+                :alt="post.image[0].alternativeText || post.title" 
+                class="img-fluid rounded shadow-sm"
+              >
+            </div>
+
+            <!-- Nội dung bài viết -->
+            <div class="post-content fs-5" v-html="sanitizedContent"></div>
+
+            <!-- Nguồn bài viết -->
+            <div v-if="post.source?.url" class="post-source mt-4 pt-4 border-top text-muted">
+              <p class="mb-0">
+                <i class="bi bi-link-45deg"></i>
+                Nguồn bài viết: 
+                <a :href="post.source.url" target="_blank" rel="noopener noreferrer" class="text-decoration-underline">
+                  {{ post.source.name || post.source.url }}
+                </a>
+              </p>
+            </div>
+          </article>
         </div>
-        <div v-else class="text-gray-500">Không có bài viết liên quan.</div>
-      </aside>
+      </div>
+
+      <!-- Related Posts -->
+      <div v-if="relatedPosts.length" class="mt-5">
+        <h4 class="mb-4">Bài viết liên quan</h4>
+        <div class="row g-4">
+          <div class="col-md-4" v-for="related in relatedPosts" :key="related.id">
+            <PostCard :post="related" />
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>

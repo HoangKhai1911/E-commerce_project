@@ -1,11 +1,18 @@
 <template>
-  <AppHeader />
-  <main class="flex-shrink-0 py-4">
+  <component :is="layoutComponent">
     <RouterView />
-  </main>
+  </component>
 </template>
 
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
-import AppHeader from '@/components/common/AppHeader.vue'
+import { computed, defineAsyncComponent } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+
+const layoutComponent = computed(() => {
+  const layoutName = route.meta.layout || 'DefaultLayout';
+  // Sử dụng defineAsyncComponent để lazy-load layout
+  return defineAsyncComponent(() => import(`@/layouts/${layoutName}.vue`));
+});
 </script>

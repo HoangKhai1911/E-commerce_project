@@ -64,7 +64,7 @@ export default {
         fields: ['id', 'title', 'slug', 'publishedAt', 'clickCount'],
         sort: { clickCount: 'desc' },
         populate: {
-          thumbnail: { fields: ['url'] },
+          image: { fields: ['url', 'alternativeText'] },
           author: {
             fields: ['username'], // Chỉ lấy các trường cần thiết của author
             populate: {
@@ -86,7 +86,7 @@ export default {
           sort: { clickCount: 'desc' },
           limit: 10 - posts.length, // Chỉ lấy số lượng còn thiếu
           populate: {
-            thumbnail: { fields: ['url'] },
+            image: { fields: ['url', 'alternativeText'] },
             author: {
               fields: ['username'],
               populate: {
@@ -147,7 +147,7 @@ export default {
         fields: ['id', 'title', 'slug', 'publishedAt', 'clickCount'],
         sort: { publishedAt: 'desc' },
         populate: {
-          thumbnail: { fields: ['url'] },
+          image: { fields: ['url', 'alternativeText'] },
           author: {
             fields: ['username'],
             populate: {
@@ -208,7 +208,7 @@ export default {
         sort: { clickCount: 'desc' }, // Thay đổi: Sắp xếp theo lượt click cao nhất
         limit: 3, // Giới hạn số lượng bài viết liên quan là 3
         populate: {
-          thumbnail: { fields: ['url'] },
+          image: { fields: ['url', 'alternativeText'] },
           author: {
             fields: ['username'],
             populate: {
@@ -272,7 +272,7 @@ export default {
         start,
         limit: parseInt(pageSize as string, 10), // Ép kiểu rõ ràng
         populate: {
-          thumbnail: { fields: ['url'] },
+          image: { fields: ['url', 'alternativeText'] },
           author: {
             fields: ['username'],
             populate: {

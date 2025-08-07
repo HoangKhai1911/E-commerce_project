@@ -1,5 +1,5 @@
 <template>
-  <nav v-if="meta.pageCount > 1" aria-label="Page navigation">
+  <nav v-if="meta && meta.pageCount > 1" aria-label="Page navigation">
     <ul class="pagination justify-content-center">
       <!-- Previous Page Link -->
       <li class="page-item" :class="{ disabled: modelValue === 1 }">

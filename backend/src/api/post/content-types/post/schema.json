@@ -31,8 +31,8 @@
       "type": "datetime"
     },
     "clickCount": {
-      "type": "integer",
-      "default": 0
+      "type": "biginteger",
+      "default": "0"
     },
     "source": {
       "type": "relation",
@@ -45,6 +45,16 @@
       "relation": "manyToMany",
       "target": "api::category.category",
       "mappedBy": "posts"
+    },
+    "viewCount": {
+      "type": "biginteger",
+      "default": "0"
+    },
+    "view_log": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::view-log.view-log",
+      "mappedBy": "post"
     },
     "image": {
       "allowedTypes": [

@@ -19,7 +19,7 @@ const categories = [
 const sources = [
   { name: 'VNExpress Công Nghệ', URL: 'https://vnexpress.net/rss/so-hoa.rss' },
   { name: 'VNExpress Thể Thao',  URL: 'https://vnexpress.net/rss/the-thao.rss' },
-  { name: 'CafeF Kinh Doanh',    URL: 'https://cafef.vn/rss/304/kinh-doanh.rss' },
+  { name: 'Cafebiz - Chuyện kinh doanh',    URL: 'https://cafebiz.vn/rss/cau-chuyen-kinh-doanh.rss' },
   { name: 'VNExpress Sức Khỏe',  URL: 'https://vnexpress.net/rss/suc-khoe.rss' },
   { name: 'Zing Giải Trí',      URL: 'https://zingnews.vn/rss/giai-tri.rss' },
   { name: 'VNExpress Giáo Dục', URL: 'https://vnexpress.net/rss/giao-duc.rss' },

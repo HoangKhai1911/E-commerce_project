@@ -91,9 +91,16 @@ const fetchCategories = async () => {
   isLoading.value = true;
   error.value = null;
   try {
-    categories.value = await categoryService.getAll();
-  } catch (err) {
-    error.value = 'Không thể tải danh sách danh mục.';
+    // Tối ưu hóa: Chỉ yêu cầu các trường cần thiết để hiển thị trong bảng.
+    // Điều này giúp giảm đáng kể lượng dữ liệu truyền về từ backend,
+    // đặc biệt là tránh tải mảng "posts" không cần thiết.
+    categories.value = await categoryService.getAll({
+      fields: ['name', 'slug'],
+      sort: 'id:asc'
+    });
+  } catch (err: any) {
+    const message = err.response?.data?.error?.message || err.message || 'Lỗi không xác định.';
+    error.value = 'Không thể tải danh sách danh mục: ' + message;
   } finally {
     isLoading.value = false;
   }
@@ -126,21 +133,40 @@ const handleSave = async () => {
     uiStore.addAlert('Lưu danh mục thành công!', 'success');
     modalInstance?.hide();
     await fetchCategories();
-  } catch (err) {
-    uiStore.addAlert('Lưu danh mục thất bại.', 'danger');
+  } catch (err: any) {
+    let errorMessage = 'Lưu danh mục thất bại.';
+    // Xử lý lỗi validation từ Strapi để hiển thị thông báo chi tiết
+    if (err.response?.data?.error?.name === 'ValidationError') {
+      const details = err.response.data.error.details?.errors
+        ?.map((e: any) => e.message)
+        .join(', ') 
+        || err.response.data.error.message;
+      errorMessage += ` Lý do: ${details}`;
+    } else if (err.response?.data?.error?.message) {
+      errorMessage += ` Lý do: ${err.response.data.error.message}`;
+    } else if (err.message) {
+      errorMessage += ` Chi tiết: ${err.message}`;
+    }
+    uiStore.addAlert(errorMessage, 'danger');
+    console.error('Error saving category:', err.response?.data || err);
   } finally {
     isSaving.value = false;
   }
 };
 
 const handleDelete = async (id: number) => {
-  if (confirm('Bạn có chắc chắn muốn xóa danh mục này?')) {
+  const confirmed = await uiStore.showConfirm(
+    'Bạn có chắc chắn muốn xóa danh mục này?',
+    'Xác nhận xóa'
+  );
+  if (confirmed) {
     try {
       await adminService.deleteCategory(id);
       uiStore.addAlert('Xóa danh mục thành công!', 'success');
       await fetchCategories();
-    } catch (err) {
-      uiStore.addAlert('Xóa danh mục thất bại.', 'danger');
+    } catch (err: any) {
+      const message = err.response?.data?.error?.message || err.message || 'Lỗi không xác định.';
+      uiStore.addAlert('Xóa danh mục thất bại: ' + message, 'danger');
     }
   }
 };

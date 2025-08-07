@@ -1,0 +1,22 @@
+{
+  "kind": "collectionType",
+  "collectionName": "view_log",
+  "info": {
+    "singularName": "view-log",
+    "pluralName": "view-logs",
+    "displayName": "View Log",
+    "description": "Ghi lại một lượt xem cho một nội dung, ví dụ như bài viết."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "post": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::post.post",
+      "inversedBy": "view_log"
+    }
+  }
+}

@@ -13,11 +13,21 @@ type UpdateSourcePayload = Partial<CreateSourcePayload>;
 
 export const adminService = {
   // == Category Management ==
-  createCategory: (data: CreateCategoryPayload) => {
-    return api.post<Category>('/categories', data);
+  async createCategory(data: CreateCategoryPayload): Promise<Category> {
+    // Strapi yêu cầu payload phải được gói trong 'data'
+    const response = await api.post<{ data: { id: number, attributes: Omit<Category, 'id'> } }>('/categories', { data });
+    return {
+      id: response.data.data.id,
+      ...response.data.data.attributes
+    };
   },
-  updateCategory: (id: number, data: UpdateCategoryPayload) => {
-    return api.put<Category>(`/categories/${id}`, data);
+  async updateCategory(id: number, data: UpdateCategoryPayload): Promise<Category> {
+    // Strapi yêu cầu payload phải được gói trong 'data'
+    const response = await api.put<{ data: { id: number, attributes: Omit<Category, 'id'> } }>(`/categories/${id}`, { data });
+    return {
+      id: response.data.data.id,
+      ...response.data.data.attributes
+    };
   },
   deleteCategory: (id: number) => {
     return api.delete(`/categories/${id}`);

@@ -21,9 +21,9 @@ interface Post {
   title: string;
   slug: string;
   excerpt?: string;
-  thumbnail: {
+  image?: {
     url: string;
-  };
+  }[];
   author: PostAuthor;
   categories: Category[];
   publishedAt: string;

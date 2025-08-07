@@ -36,9 +36,7 @@ export default factories.createCoreController('api::category.category', ({ strap
    * @param {object} ctx
    */
   async find(ctx: Context) {
-    console.log('--- Custom Category find called (using entityService directly) ---');
-    console.log('ctx.query:', ctx.query);
-    console.log('----------------------------------------------------');
+    console.log('--- Custom Category find called (extending core controller) ---');
 
     // Trích xuất các tham số query cho filters, pagination, sort
     const { query } = ctx;
@@ -72,19 +70,17 @@ export default factories.createCoreController('api::category.category', ({ strap
       const count = await strapi.entityService.count('api::category.category', { filters });
 
       // Chuyển đổi các bản ghi để phù hợp với định dạng phản hồi API mặc định của Strapi (data và meta)
-      const transformedEntries = entries.map((entry: any) => ({
-        id: entry.id,
-        attributes: {
-          ...entry, // Trải tất cả các thuộc tính khác
-          // Đảm bảo các quan hệ được lồng đúng cách dưới 'attributes'
-          posts: entry.posts ? entry.posts.map((post: any) => ({
+      const transformedEntries = entries.map((entry: any) => {
+        const { id, ...attributes } = entry;
+        // Giữ lại việc tùy chỉnh `posts` nếu cần, nhưng đảm bảo cấu trúc chính xác
+        attributes.posts = attributes.posts ? attributes.posts.map((post: any) => ({
             id: post.id,
             title: post.title,
             slug: post.slug,
             publishedAt: post.publishedAt,
-          })) : [],
-        }
-      }));
+        })) : [];
+        return { id, attributes };
+      });
 
       // Tính toán metadata phân trang
       const page = parseInt((pagination as any)?.page as string || '1', 10);
@@ -121,57 +117,41 @@ export default factories.createCoreController('api::category.category', ({ strap
    */
   async findOne(ctx: Context) {
     console.log('--- Custom Category findOne called ---');
-    console.log('ctx.params:', ctx.params);
-    console.log('ctx.query:', ctx.query);
-    console.log('------------------------------------');
+    const { id } = ctx.params;
 
-    const { id } = ctx.params; // Lấy ID hoặc slug từ params
-    const { populate } = ctx.query; // Cho phép tùy chỉnh populate từ query params
-
-    try {
-      let category: CategoryWithPosts | null = null;
-
-      // 🔴 SỬA LỖI Ở ĐÂY: Đơn giản hóa populate mặc định cho findOne
-      // Chỉ populate các trường cơ bản của posts để kiểm tra
-      const defaultPopulate = {
+    // 1. Đặt populate mặc định nếu client không cung cấp.
+    if (!ctx.query.populate) {
+      (ctx.query as any).populate = {
         posts: {
-          fields: ['id', 'title', 'slug'], // Chỉ lấy ID, title, slug của post
-          // Tạm thời bỏ populate sâu hơn của post để đơn giản hóa
+          fields: ['id', 'title', 'slug', 'publishedAt'], // Chỉ lấy ID, title, slug của post
         },
-        // Thêm các quan hệ trực tiếp khác của category nếu cần
       };
-
-      // Xử lý populate: nếu có populate từ query, sử dụng nó, nếu không, dùng defaultPopulate
-      const actualPopulate = populate || defaultPopulate;
-
-      // Kiểm tra xem 'id' có phải là một số nguyên (ID) hay là một chuỗi (slug)
-      if (isNaN(Number(id))) { // Nếu không phải số, coi là slug
-        console.log(`Finding category by slug: ${id}`);
-        const entities = await strapi.entityService.findMany('api::category.category', {
-          filters: { slug: { $eq: id } },
-          populate: actualPopulate,
-          limit: 1,
-        }) as CategoryWithPosts[];
-        category = entities[0] || null;
-      } else { // Nếu là số, coi là ID
-        console.log(`Finding category by ID: ${id}`);
-        category = await strapi.entityService.findOne('api::category.category', id, {
-          populate: actualPopulate,
-        }) as CategoryWithPosts;
-      }
-
-      if (!category) {
-        return ctx.notFound('Không tìm thấy danh mục.');
-      }
-
-      // Sanitize the output to respect roles and permissions
-      const sanitizedEntity = await this.sanitizeOutput(category, ctx);
-
-      // Trả về phản hồi đã được chuyển đổi
-      return this.transformResponse(sanitizedEntity);
-    } catch (error: any) {
-      console.error('❌ Lỗi khi lấy chi tiết danh mục:', error);
-      ctx.internalServerError('Lỗi khi lấy chi tiết danh mục.');
     }
+
+    // 2. Kiểm tra xem 'id' có phải là slug hay không.
+    if (isNaN(Number(id))) {
+      console.log(`Finding category by slug: ${id}`);
+      try {
+        // Use type assertion to avoid TypeScript error
+        (ctx.query as any).filters = { slug: { $eq: id } };
+
+        // Use findMany and get the first element
+        const { data } = await super.find(ctx);
+
+        if (data && data.length > 0) {
+          // Manually transform the response for a single entity
+          return this.transformResponse(data[0]);
+        } else {
+          return ctx.notFound('Không tìm thấy danh mục.');
+        }
+      } catch (error: any) {
+        console.error('❌ Lỗi khi lấy chi tiết danh mục bằng slug:', error);
+        ctx.internalServerError('Lỗi khi lấy chi tiết danh mục.');
+      }
+    }
+
+    // 3. Nếu là ID, để core controller xử lý.
+    console.log(`Finding category by ID: ${id}`);
+    return super.findOne(ctx);
   },
 }));

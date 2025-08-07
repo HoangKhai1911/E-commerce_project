@@ -109,15 +109,21 @@ export default {
           return ctx.unauthorized('Tài khoản Admin đã bị khóa.');
         }
 
-        // Cấp JWT và trả về thông tin người dùng
-        const jwt = strapi.plugins['users-permissions'].services.jwt.issue({ id: user.id });
+        // Cấp accessToken (ngắn hạn) và refreshToken (dài hạn)
+        const accessToken = strapi.plugins['users-permissions'].services.jwt.issue({ id: user.id });
+        const refreshToken = strapi.plugins['users-permissions'].services.jwt.issue({ id: user.id }, { expiresIn: '7d' });
+
         const userProfile = await strapi.entityService.findOne('plugin::users-permissions.user', user.id, {
           populate: ['role', 'categories', 'avatar'],
         });
 
         const sanitizedUser = strapi.plugins['users-permissions'].services.user.sanitizeUser(userProfile);
 
-        return ctx.send({ jwt, user: { ...sanitizedUser, isAdmin: userProfile.isAdmin } });
+        return ctx.send({
+          jwt: accessToken,
+          refreshToken,
+          user: { ...sanitizedUser, isAdmin: userProfile.isAdmin }
+        });
       } catch (error) {
         console.error('Lỗi khi đăng nhập Admin:', error);
         return ctx.internalServerError('Đăng nhập Admin không thành công. Vui lòng thử lại.');
@@ -150,14 +156,18 @@ export default {
         return ctx.unauthorized('Tài khoản chưa được xác thực email.');
       }
 
-      const jwt = strapi.plugins['users-permissions'].services.jwt.issue({ id: user.id });
+      // Cấp accessToken (ngắn hạn) và refreshToken (dài hạn)
+      const accessToken = strapi.plugins['users-permissions'].services.jwt.issue({ id: user.id });
+      const refreshToken = strapi.plugins['users-permissions'].services.jwt.issue({ id: user.id }, { expiresIn: '7d' });
+
 
       const userProfile = await strapi.entityService.findOne('plugin::users-permissions.user', user.id, {
         populate: ['role', 'categories', 'avatar'],
       });
 
       ctx.send({
-        jwt,
+        jwt: accessToken,
+        refreshToken,
         user: {
           id: userProfile.id,
           username: userProfile.username,
@@ -258,6 +268,37 @@ export default {
         return ctx.badRequest('Token xác minh không hợp lệ.');
       }
       ctx.internalServerError('Xác minh email không thành công.');
+    }
+  },
+
+  /**
+   * POST /api/auth/refresh-token
+   * Làm mới access token bằng refresh token.
+   */
+  async refreshToken(ctx) {
+    const { refreshToken } = ctx.request.body;
+
+    if (!refreshToken) {
+      return ctx.badRequest('Thiếu refresh token.');
+    }
+
+    try {
+      // Xác thực refresh token
+      const payload: any = await strapi.plugins['users-permissions'].services.jwt.verify(refreshToken);
+
+      // Lấy thông tin người dùng
+      const user = await strapi.entityService.findOne('plugin::users-permissions.user', payload.id);
+
+      if (!user || user.blocked) {
+        return ctx.unauthorized('Refresh token không hợp lệ hoặc người dùng đã bị khóa.');
+      }
+
+      // Cấp một access token mới
+      const newAccessToken = strapi.plugins['users-permissions'].services.jwt.issue({ id: user.id });
+
+      ctx.send({ jwt: newAccessToken });
+    } catch (err) {
+      return ctx.unauthorized('Refresh token không hợp lệ hoặc đã hết hạn.');
     }
   },
 };

@@ -49,7 +49,6 @@
               @input="debouncedFetchSuggestions"
               @blur="hideSuggestions"
             />
-            <button class="btn btn-outline-primary d-none d-md-block" type="submit">Tìm</button>
           </form>
           <ul v-if="showSuggestions && suggestions.length > 0" class="search-dropdown dropdown-menu show">
             <li v-for="suggestion in suggestions" :key="suggestion.id">
@@ -134,7 +133,6 @@ const showSuggestions = ref(false);
 
 const handleLogout = () => {
   authStore.logout();
-  router.push({ name: 'Home' });
 };
 
 const handleSearchSubmit = () => {

@@ -21,7 +21,7 @@
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::category.category",
-      "mappedBy": "usersPreferences"
+      "mappedBy": "user_preferences"
     },
     "users_permissions_user": {
       "type": "relation",

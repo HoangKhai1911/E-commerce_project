@@ -1,36 +1,16 @@
 'use strict';
 
-module.exports = [
-  {
-    method: 'POST',
-    path: '/custom-auth/register',
-    handler: 'custom-auth.register',
-    config: {
-      auth: false,
+module.exports = {
+  routes: [
+    {
+      method: 'POST',
+      path: '/auth/refresh-token',
+      handler: 'auth-controller.refreshToken',
+      config: {
+        auth: false, // Endpoint này không yêu cầu access token
+        policies: [],
+        middlewares: [],
+      },
     },
-  },
-  {
-    method: 'POST',
-    path: '/custom-auth/login',
-    handler: 'custom-auth.login',
-    config: {
-      auth: false, 
-    },
-  },
-  {
-    method: 'GET',
-    path: '/custom-auth/me',
-    handler: 'custom-auth.me',
-    config: {
-      auth: "jwt",
-    },
-  },
-  {
-    method: 'GET',
-    path: '/custom-auth/verify-email',
-    handler: 'custom-auth.verifyEmail',
-    config: {
-      auth: false,
-    },
-  },
-];
+  ],
+};
