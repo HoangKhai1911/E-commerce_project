@@ -1,26 +1,40 @@
 <template>
-  <div class="card h-100 shadow-sm border-0 rounded-lg overflow-hidden">
-    <RouterLink :to="{ name: 'PostDetail', params: { slug: post.slug } }" class="d-block text-decoration-none text-dark">
-      <div class="post-thumbnail-wrapper bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
+  <div class="card h-100 post-card-professional">
+    <RouterLink :to="{ name: 'PostDetail', params: { slug: post.slug } }" class="d-block text-decoration-none">
+      <div class="post-thumbnail-wrapper" style="height: 230px;">
         <img
           v-if="post.image && post.image.length > 0 && post.image[0].url"
           :src="`${strapiBaseUrl}${post.image[0].url}`"
           :alt="post.image[0].alternativeText || post.title"
-          class="card-img-top"
+          class="card-img-top post-image"
           loading="lazy"
-          style="object-fit: cover; width: 100%; height: 100%;"
           onerror="this.onerror=null;this.src='/images/default-post-image.png';"
         />
-        <div v-else class="text-muted text-center p-3">
-          <i class="bi bi-image display-4"></i>
-          <p class="mb-0">Không có ảnh bìa</p>
+        <div v-else class="placeholder-image">
+          <i class="bi bi-image display-4 text-muted"></i>
+          <p class="mb-0 text-muted">Không có ảnh bìa</p>
         </div>
       </div>
     </RouterLink>
 
-    <div class="card-body d-flex flex-column">
+    <div class="card-body d-flex flex-column p-4">
+      <!-- Categories -->
+      <div class="d-flex flex-wrap gap-2 mb-2">
+        <router-link
+          v-for="category in displayedCategories"
+          :key="category.id"
+          :to="{ name: 'CategoryDetail', params: { slug: category.slug } }"
+          class="badge post-badge text-decoration-none"
+        >
+          {{ category.name }}
+        </router-link>
+        <span v-if="remainingCategoriesCount > 0" class="badge post-badge-secondary" title="Các danh mục khác">
+          +{{ remainingCategoriesCount }}
+        </span>
+      </div>
+
       <h5 class="card-title fw-bold mb-2">
-        <router-link :to="{ name: 'PostDetail', params: { slug: post.slug } }" class="text-decoration-none text-dark">
+        <router-link :to="{ name: 'PostDetail', params: { slug: post.slug } }" class="text-decoration-none text-dark card-title-link">
           <HighlightText :text="post.title" :query="searchQuery" />
         </router-link>
       </h5>
@@ -28,53 +42,25 @@
       <p v-if="post.excerpt" class="card-text text-muted small flex-grow-1 text-truncate-3-lines">
         {{ post.excerpt }}
       </p>
-      <div v-else-if="post.content" class="card-text text-muted small flex-grow-1" v-html="shortContent"></div>
+      <div v-else-if="post.content" class="card-text text-muted small flex-grow-1 text-truncate-3-lines" v-html="shortContent"></div>
 
-      <div v-if="post.source?.url" class="mt-2">
-        <a
-          :href="post.source.url"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="small text-decoration-underline text-muted"
-        >
-          Nguồn bài gốc
-        </a>
-      </div>
-
-      <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+      <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top-dashed">
+        <!-- Author Info -->
         <div class="d-flex align-items-center">
           <img
             :src="post.author?.avatar?.url || '/images/default-avatar.png'"
             alt="Author Avatar"
-            class="rounded-circle me-2"
-            style="width: 30px; height: 30px; object-fit: cover;"
+            
           />
-          <small class="text-muted">{{ post.author?.username || 'Ẩn danh' }}</small>
+          
         </div>
-        <small class="text-muted">
+
+        <!-- Date & Reading Time -->
+        <small class="text-muted text-end">
           {{ formatDate(post.publishedAt) }}
           <span v-if="readingTime" class="mx-1">&middot;</span>
           <span v-if="readingTime">{{ readingTime }}</span>
         </small>
-      </div>
-    </div>
-
-    <div class="card-footer bg-white border-0 pt-0 pb-3 px-3">
-      <div class="d-flex flex-wrap gap-1">
-        <router-link
-          v-for="category in displayedCategories"
-          :key="category.id"
-          :to="{ name: 'CategoryDetail', params: { slug: category.slug } }"
-          class="badge bg-primary-subtle text-primary-emphasis fw-normal rounded-pill text-decoration-none"
-        >
-          {{ category.name }}
-        </router-link>
-        <span v-if="remainingCategoriesCount > 0" class="badge bg-secondary-subtle text-secondary-emphasis fw-normal rounded-pill" title="Các danh mục khác">
-          +{{ remainingCategoriesCount }}
-        </span>
-        <span v-if="!post.categories || post.categories.length === 0" class="badge bg-secondary-subtle text-secondary-emphasis fw-normal rounded-pill">
-          Chưa phân loại
-        </span>
       </div>
     </div>
   </div>
@@ -161,3 +147,129 @@ const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('vi-VN', options);
 };
 </script>
+
+<style scoped>
+/*
+  ================================================
+  Variables & Typography
+  ================================================
+*/
+:root {
+  --primary-color: #0d6efd;
+  --secondary-color: #6c757d;
+  --text-dark: #212529;
+  --text-muted: #6c757d;
+  --card-bg: #ffffff;
+  --card-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+  --card-shadow-hover: 0 1rem 2rem rgba(0, 0, 0, 0.1);
+  --border-radius: 1rem;
+}
+
+.post-card-professional {
+  border: none;
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.post-card-professional:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--card-shadow-hover);
+}
+
+/*
+  ================================================
+  Image & Placeholder
+  ================================================
+*/
+.post-thumbnail-wrapper {
+  background-color: #CED2D6FF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid rgba(0,0,0,.05);
+}
+
+.post-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease-in-out;
+}
+
+.post-card-professional:hover .post-image {
+  transform: scale(1.05);
+}
+
+.placeholder-image {
+  text-align: center;
+  padding: 2rem;
+}
+
+/*
+  ================================================
+  Content
+  ================================================
+*/
+.card-title {
+  font-weight: 700;
+  line-height: 1.2;
+  font-size: 1.25rem;
+  text-align: center;
+}
+
+.card-title-link {
+  color: var(--text-dark);
+  transition: color 0.2s ease-in-out;
+}
+
+.card-title-link:hover {
+  color: var(--primary-color);
+}
+
+.text-truncate-3-lines {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.border-top-dashed {
+  border-top: 1px dashed #376B9EFF !important;
+}
+
+.author-avatar {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+}
+
+/*
+  ================================================
+  Badges (Categories)
+  ================================================
+*/
+.post-badge {
+  background-color: rgba(66, 105, 163, 0.1);
+  color: var(--primary-color);
+  font-weight: 600;
+  padding: .35em .65em;
+  border-radius: 50rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.post-badge:hover {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+.post-badge-secondary {
+  background-color: rgba(53, 95, 131, 0.1);
+  color: var(--secondary-color);
+  font-weight: 600;
+  padding: .35em .65em;
+  border-radius: 50rem;
+}
+</style>

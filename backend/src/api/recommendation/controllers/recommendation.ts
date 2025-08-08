@@ -190,7 +190,11 @@ export default {
 
       // Đảm bảo currentPost.categories tồn tại trước khi map
       if (!currentPost.categories || currentPost.categories.length === 0) {
-        return ctx.body = { error: 'Bài viết hiện tại không có danh mục để đề xuất liên quan.' };
+        // Thay vì trả về lỗi, trả về một mảng rỗng.
+        // Giao diện người dùng (frontend) mong đợi một danh sách (array).
+        // Điều này đảm bảo giao diện không bị lỗi nếu một bài viết không có danh mục.
+        ctx.body = [];
+        return;
       }
 
       // 2) Lấy danh sách ID của các danh mục của bài viết hiện tại

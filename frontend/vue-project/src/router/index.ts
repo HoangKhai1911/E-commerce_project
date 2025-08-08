@@ -56,12 +56,6 @@ const router = createRouter({
       component: () => import('@/views/Profile.vue'),
       meta: { layout: 'DefaultLayout' }
     },
-    {
-      path: '/preferences',
-      name: 'Preferences',
-      component: () => import('@/views/user/PreferencesPage.vue'),
-      meta: { layout: 'DefaultLayout' }
-    },
     // Admin Routes
     {
       path: '/admin/posts',

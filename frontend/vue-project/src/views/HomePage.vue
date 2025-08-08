@@ -16,19 +16,10 @@
 
     <!-- Nội dung chính của trang, sử dụng layout Bootstrap 5 -->
     <main v-else class="container py-5">
-      <!-- Khu vực hiển thị các danh mục nổi bật -->
-      <section v-if="trendingCategories.length > 0" class="mb-5">
-        <h2 class="text-center fw-bold mb-4">Chủ đề nổi bật</h2>
-        <div class="row g-3 justify-content-center">
-          <div v-for="category in trendingCategories" :key="category.id" class="col-6 col-sm-4 col-md-3 col-lg-2">
-            <CategoryCard :category="category" />
-          </div>
-        </div>
-      </section>
 
       <!-- Khu vực hiển thị các bài viết được đề xuất -->
       <section v-if="recommendedPosts.length > 0" class="mb-5">
-        <h2 class="text-center fw-bold mb-4">Bài viết dành cho bạn</h2>
+        <h2 class="section-heading">Bài viết mới nhất</h2>
         <div class="row g-4">
           <div v-for="post in recommendedPosts" :key="post.id" class="col-12 col-md-6 col-lg-4">
             <PostCard :post="post" />
@@ -75,3 +66,18 @@ onMounted(async () => {
   }
 });
 </script>
+<style scoped>
+/* Tiêu đề với chữ in hoa, nền tím nhạt */
+.section-heading {
+  text-transform: uppercase;
+  font-weight: 800;
+  font-size: 3rem;
+  color: linear-gradient(to right, #007bff, #00c6ff);
+  padding: 1rem 1.5rem;
+  border-radius: 0.75rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  letter-spacing: 1px;
+}
+</style>
+

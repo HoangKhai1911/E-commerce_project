@@ -21,7 +21,6 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:1337', // Địa chỉ Strapi backend của bạn
         changeOrigin: true, // Thay đổi origin của request thành target host
-        rewrite: (path) => path.replace(/^\/api/, ''), // Xóa tiền tố /api khỏi path trước khi gửi đến backend
       },
     },
   }, // <-- KẾT THÚC KHỐI NÀY

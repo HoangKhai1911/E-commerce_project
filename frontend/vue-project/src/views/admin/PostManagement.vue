@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="mb-4">Quản lý Bài viết</h1>
+    <h1 class="mb-4">QUẢN LÝ BÀI VIẾT</h1>
 
     <!-- Filter Controls -->
     <div class="card shadow-sm mb-4">
@@ -451,3 +451,13 @@ onMounted(() => {
   fetchPosts();
 });
 </script>
+
+<style scoped>
+.mb-4 {
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #212529; /* Màu đen đậm */
+  text-align: center;
+}
+</style>

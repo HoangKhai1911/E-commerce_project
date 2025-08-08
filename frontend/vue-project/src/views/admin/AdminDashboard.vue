@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1>Bảng điều khiển</h1>
+      <h1 class="b">BẢNG ĐIỀU KHIỂN</h1>
     </div>
 
     <LoadingSpinner v-if="isLoading" />
@@ -257,6 +257,13 @@ const categoryPieChartOptions = ref<ChartOptions<'pie'>>({
 </script>
 
 <style scoped>
+.b {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #212529; /* Màu đen đậm */
+  margin-bottom: 1rem;
+  justify-content: center;
+}
 .card {
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
@@ -265,7 +272,7 @@ const categoryPieChartOptions = ref<ChartOptions<'pie'>>({
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
 }
 .list-group-item-action:hover {
-  background-color: #f8f9fa;
+  background-color: #2367ACFF;
 }
 /* Giới hạn số dòng cho tiêu đề bài viết trong danh sách */
 .text-truncate {
